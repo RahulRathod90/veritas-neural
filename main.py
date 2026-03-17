@@ -150,7 +150,10 @@ def _load_models():
 app = FastAPI(title="Veritas Neural API", version="10.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_credentials=True,
+    allow_origins=[
+    "http://localhost:5173",
+    "https://your-app.vercel.app",  # ← your Vercel URL
+    ],
     allow_methods=["*"], allow_headers=["*"],
 )
 
