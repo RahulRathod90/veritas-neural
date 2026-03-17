@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+torch
+torchvision
+transformers
+pillow
+librosa
+soundfile
+opencv-python-headless
+numpy
+exifread
+requests
