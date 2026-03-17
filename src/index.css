@@ -1,0 +1,202 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ─── */
+:root {
+  --paper:    #E8E4DD;
+  --signal:   #E63B2E;
+  --offwhite: #F5F3EE;
+  --ink:      #111111;
+  --slate:    #1E1E1E;
+  --muted:    #6B6B6B;
+}
+
+/* ─── Base Reset ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: var(--offwhite);
+  color: var(--ink);
+  font-family: 'Space Grotesk', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ─── Global Noise Overlay ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* ─── Typography Utilities ─── */
+.font-drama {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+}
+
+.font-data {
+  font-family: 'Space Mono', monospace;
+}
+
+/* ─── Magnetic Button ─── */
+.btn-magnetic {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+}
+
+.btn-magnetic:hover {
+  transform: scale(1.03) translateY(-1px);
+  box-shadow: 0 12px 40px rgba(230, 59, 46, 0.35);
+}
+
+.btn-magnetic .btn-slide {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-101%);
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.btn-magnetic:hover .btn-slide {
+  transform: translateX(0);
+}
+
+/* ─── Link Hover ─── */
+.link-hover {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.2s ease;
+  display: inline-block;
+}
+
+.link-hover:hover {
+  transform: translateY(-1px);
+  opacity: 0.7;
+}
+
+/* ─── Section Utilities ─── */
+.section-pad {
+  padding: 7rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .section-pad {
+    padding: 4rem 1rem;
+  }
+}
+
+/* ─── Card Base ─── */
+.artifact-card {
+  background: var(--offwhite);
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 2rem;
+  box-shadow: 0 2px 20px rgba(17,17,17,0.06);
+  overflow: hidden;
+}
+
+/* ─── Noise card overlay ─── */
+.card-noise {
+  position: relative;
+}
+.card-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+}
+
+/* ─── Cursor blink ─── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--signal);
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+/* ─── Pulsing dot ─── */
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.8; }
+  70%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.pulse-dot {
+  position: relative;
+  display: inline-flex;
+  width: 10px;
+  height: 10px;
+}
+.pulse-dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+.pulse-dot::after {
+  content: '';
+  position: relative;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+/* ─── Signal pulse (live indicator) ─── */
+@keyframes signal-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.5; }
+}
+.signal-pulse {
+  animation: signal-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── Grid pattern overlay ─── */
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(17,17,17,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17,17,17,0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Waveform animation ─── */
+@keyframes waveform-draw {
+  from { stroke-dashoffset: 600; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ─── Stacking cards ─── */
+.protocol-card {
+  position: sticky;
+  top: 0;
+  transform-origin: top center;
+  will-change: transform, filter, opacity;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--offwhite); }
+::-webkit-scrollbar-thumb { background: rgba(17,17,17,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--signal); }
