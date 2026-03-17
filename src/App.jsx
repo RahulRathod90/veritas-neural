@@ -542,7 +542,7 @@ function ScannerPanel() {
     intervalRef.current = setInterval(() => setProgress(p => p >= 92 ? 92 : p + (92 / 30)), 100)
     try {
       const form = new FormData(); form.append('file', file)
-      const res = await fetch('http://localhost:8000/api/analyze', { method: 'POST', body: form })
+      const res = await fetch('https://web-production-7258c.up.railway.app/api/analyze', { method: 'POST', body: form })
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const data = await res.json()
       clearInterval(intervalRef.current); setProgress(100)
