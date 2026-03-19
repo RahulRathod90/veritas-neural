@@ -11,3 +11,5 @@ opencv-python-headless
 numpy
 pillow
 requests
+fastapi
+uvicorn[standard]
