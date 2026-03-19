@@ -150,11 +150,9 @@ def _load_models():
 app = FastAPI(title="Veritas Neural API", version="10.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-    "http://localhost:5173",
-    "https://your-app.vercel.app",  # ← your Vercel URL
-    ],
-    allow_methods=["*"], allow_headers=["*"],
+    allow_origins=["*"],  # Allow all for demo-mode production
+    allow_methods=["*"], 
+    allow_headers=["*"],
 )
 
 
@@ -746,4 +744,6 @@ async def analyze(
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    import uvicorn
+    port = int(os.environ.get("PORT", 7860))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
