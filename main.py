@@ -148,6 +148,10 @@ def _load_models():
 # 🧠 App + CORS
 # ─────────────────────────────────────────────────────────────
 app = FastAPI(title="Veritas Neural API", version="10.0.0")
+@app.on_event("startup")
+def startup_event():
+    print("[VN] Preloading models...")
+    _load_models()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allow all for demo-mode production
@@ -646,6 +650,14 @@ def _build_response(
 # ─────────────────────────────────────────────────────────────
 # 🚀 Endpoints
 # ─────────────────────────────────────────────────────────────
+@app.get("/")
+def root():
+    return {
+        "message": "Veritas Neural API is live 🚀",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
 @app.get("/health")
 async def health():
     return {
@@ -681,7 +693,11 @@ async def analyze(
         final = _calibrate_score(_ensemble_score(text=prob, heuristic=h))
         return _build_response(final, "pasted_text.txt", start, modality="text")
 
-    content      = await file.read()
+    content = await file.read()
+    # 🚫 Prevent large file crashes (HF limit safety)
+    if len(content) > 20 * 1024 * 1024:  # 20MB
+        raise HTTPException(status_code=413, detail="File too large")
+
     filename     = file.filename or "uploaded_file"
     content_type = file.content_type or ""
     ext          = os.path.splitext(filename)[1].lower()
@@ -744,6 +760,5 @@ async def analyze(
 
 
 if __name__ == "__main__":
-    import uvicorn
     port = int(os.environ.get("PORT", 7860))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=port )
