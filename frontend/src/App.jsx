@@ -542,7 +542,7 @@ function ScannerPanel() {
     intervalRef.current = setInterval(() => setProgress(p => p >= 92 ? 92 : p + (92 / 30)), 100)
     try {
       const form = new FormData(); form.append('file', file)
-      fetch('https://sheikfawaz-veritas-neural-core.hf.space/api/analyze', {
+      fetch(`${import.meta.env.VITE_API_URL}/api/analyze`, {
         method: 'POST',
         body: form
       })
