@@ -1,72 +1,110 @@
 # Veritas Neural
 
-### *The Final Bastion of Authenticity in a Synthetic World.*
+### *A Multimodal AI Detection Engine for Synthetic and Manipulated Media.*
+
+> **For final-year engineering project and portfolio use.**
 
 ---
 
 ## 🧠 Overview
 
-**Veritas Neural** is a world-class, multi-modal forensic engine designed to dismantle the threat of AI-generated misinformation. While most deepfake detectors rely on opaque cloud processing, Veritas Neural operates on a **Zero-Trust, Local-First** architecture. 
+**Veritas Neural** is a multimodal forensic inference engine that analyzes text, images, audio, and video for AI-generated or synthetically manipulated content. It uses pretrained PyTorch models served through a FastAPI backend, with a React/Vite frontend.
 
-By executing complex neural inference directly on the user's hardware, we ensure that sensitive data never leaves the device. Whether it's a suspicious voice clone, a manipulated video, or synthetically generated text, Veritas Neural provides an immediate, verifiable, and private verdict.
+**Privacy-focused design:** The backend can be run entirely locally (self-hosted). No files are sent to third-party AI APIs. When deployed locally, processing happens entirely on your own hardware.
+
+> **Deployment note:** The current frontend connects to the URL set in `VITE_API_URL` (default: `http://localhost:8000`). If deployed to a cloud host, inference runs on that cloud server — not on the user's device.
 
 ---
 
-## ✨ Key Features
+## ✨ Actual Features
 
-- **🛡️ Multi-Modal Detection:** Comprehensive analysis of Text, Image, Audio, and Video in a single unified pipeline.
-- **🔌 Local-First Inference:** High-performance PyTorch models execute on-device (CPU/CUDA). No cloud uploads. No data leaks.
-- **⚡ Proactive Forensics:** Detects GAN boundary anomalies, PRNU sensor noise mismatches, and MFCC voice-clone signatures.
-- **🎨 Cinematic UI:** A premium 3D experience powered by **React Three Fiber (Spline)** and **GSAP** for intentional, weighted interactions.
-- **📉 Privacy-Focus:** Fully operational offline after the initial model download (~800MB cache).
+- **📄 Text detection:** RoBERTa transformer model (`Hello-SimpleAI/chatgpt-detector-roberta`) classifies text as likely AI-generated or human-written, with confidence thresholds and "Uncertain" label when confidence is low.
+- **🖼️ Image detection:** SigLIP classifier (`Ateeqq/ai-vs-human-image-detector`) for full-image AI vs real classification. ViT deepfake detector (`prithivMLmods/Deep-Fake-Detector-v2-Model`) applied to face crops if faces are detected via OpenCV.
+- **🎧 Audio analysis:** MFCC signal analysis via librosa (spectral features only — NOT a trained deepfake detector).
+- **🎬 Video detection:** Sparse frame sampling. SigLIP model applied to individual frames. Actual frame timestamps reported.
+- **📋 EXIF metadata:** Presence/absence of camera metadata noted as a weak supporting signal only.
+- **🔒 Self-hosted local deployment:** All models run on your hardware after the initial download.
+
+---
+
+## ❌ What Is NOT Implemented
+
+The following techniques are **not** implemented in this version. They are not claimed or displayed:
+
+- PRNU sensor noise analysis
+- GAN boundary detection
+- Lip-sync desynchronization detection
+- Temporal transformer analysis (e.g. TimeSformer)
+- Pixel-level manipulation localization (bounding boxes)
+- Trained audio anti-spoofing model (e.g. AASIST, RawNet2)
 
 ---
 
 ## 🏗️ Architecture
 
-Veritas Neural is built for speed and privacy. The data flow is strictly unidirectional and local:
-
-```mermaid
-graph TD
-    User([User Asset]) --> Frontend[React + Vite UI]
-    Frontend --> API[FastAPI Local Server]
-    API --> Processing{Modalities}
-    
-    Processing -->|Images| SigLIP[SigLIP + ViT Models]
-    Processing -->|Video| Sampling[Sparse Frame Sampling]
-    Processing -->|Audio| Librosa[MFCC Variance Analysis]
-    Processing -->|Text| RoBERTa[RoBERTa Classifier]
-    
-    SigLIP --> Verdict[Ensemble Scoring]
-    Sampling --> SigLIP
-    Librosa --> Verdict
-    RoBERTa --> Verdict
-    
-    Verdict --> Response[JSON Result + Forensic Breakdown]
-    Response --> Frontend
 ```
+User Asset
+    │
+    ▼
+React Frontend (Vite)
+    │
+    │  POST /api/analyze
+    ▼
+FastAPI Backend (local or self-hosted)
+    │
+    ├─ Text ────────────────► RoBERTa text classifier
+    │                              └─► classification + confidence
+    │
+    ├─ Image ──────────────► Image preprocessing
+    │                         ├─► SigLIP classifier (full image)
+    │                         ├─► OpenCV face detection
+    │                         ├─► ViT deepfake (face crops, if face found)
+    │                         └─► EXIF metadata check
+    │
+    ├─ Audio ──────────────► Librosa MFCC analysis
+    │                              └─► Signal features (informational only)
+    │
+    └─ Video ──────────────► Frame sampling (blur-filtered)
+                                   └─► SigLIP per frame (actual timestamps)
+                                         └─► Median + majority vote
+    │
+    ▼
+Transparent JSON response with:
+  - classification, score, confidence
+  - evidence[] (from actual models only)
+  - limitations[]
+  - score_fusion documentation
+```
+
+---
+
+## 🧬 AI Models Used
+
+| Modality | Model | Purpose |
+|:---------|:------|:--------|
+| Image | `Ateeqq/ai-vs-human-image-detector` (SigLIP) | Full-image AI vs real classification |
+| Image/Video | `prithivMLmods/Deep-Fake-Detector-v2-Model` (ViT) | Face deepfake detection on face crops |
+| Text | `Hello-SimpleAI/chatgpt-detector-roberta` (RoBERTa) | AI-generated text detection |
+| Audio | librosa MFCC | Basic audio signal analysis (not a deepfake model) |
 
 ---
 
 ## 🧪 Tech Stack
 
 ### Frontend
-- **Core:** React 19, Vite
-- **Animations:** GSAP 3 (ScrollTrigger), Framer Motion
-- **3D Engine:** Spline (React-Spline)
-- **Icons:** Lucide React
-- **Styling:** Tailwind CSS v3.4
+- React 19, Vite
+- GSAP 3 (ScrollTrigger)
+- Spline (3D scene)
+- Lucide React
+- Tailwind CSS v3.4
 
 ### Backend
-- **Framework:** FastAPI
-- **Server:** Uvicorn (Standard)
-- **Image Processing:** OpenCV, Pillow
-- **Audio Processing:** Librosa, SoundFile
-- **Metadata:** ExifRead
-
-### AI/ML
-- **Engine:** PyTorch / Transformers (Hugging Face)
-- **Inference:** Local CPU/CUDA execution
+- FastAPI + Uvicorn
+- PyTorch + HuggingFace Transformers
+- OpenCV (headless) — face detection
+- Librosa — audio signal analysis
+- ExifRead — EXIF metadata
+- Pillow — image processing
 
 ---
 
@@ -75,6 +113,7 @@ graph TD
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
+- ~800MB disk space for model cache
 
 ### 1. Clone the Repository
 ```bash
@@ -84,142 +123,200 @@ cd veritas-neural-core
 
 ### 2. Backend Setup
 ```bash
-# Install dependencies
 pip install -r requirements.txt
+```
 
-# Launch the inference engine
+> **Note:** Models (~800MB) download automatically from Hugging Face on the first run.
+
+### 3. Start the Backend
+```bash
+# Development (with auto-reload)
+uvicorn main:app --reload --port 8000
+
+# Or directly:
 python main.py
 ```
-*Note: Models (~800MB) will download automatically on the first run.*
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
+Open: `http://localhost:5173`
+
 ---
 
 ## 🔑 Environment Variables
 
-Create a `.env` file in the `frontend` directory:
+### Frontend (`frontend/.env`)
 
 ```env
+# Backend API endpoint
+# For local development:
 VITE_API_URL=http://localhost:8000
+
+# For cloud/self-hosted deployment:
+# VITE_API_URL=https://your-backend-host.example.com
+```
+
+### Backend (environment variables)
+
+```env
+# Comma-separated list of allowed frontend origins (for CORS)
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Port to bind to (when run as __main__)
+PORT=7860
 ```
 
 ---
 
 ## 📡 API Endpoints
 
+### `GET /health`
+Returns model availability and system status.
+
 ### `POST /api/analyze`
-The primary endpoint for multi-modal analysis.
 
 | Parameter | Type | Description |
-| :--- | :--- | :--- |
-| `file` | File (Binary) | The media asset to analyze (Optional if text is provided) |
-| `text_payload` | String | Plain text for linguistic analysis (Optional if file is provided) |
+|:---|:---|:---|
+| `file` | File (Binary) | Image, video, audio, or text file |
+| `text_payload` | String (Form) | Plain text for linguistic analysis |
 
-**Example Response:**
+Provide one of `file` or `text_payload`.
+
+**Supported file types:**
+- Image: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.bmp`
+- Video: `.mp4`, `.mov`, `.avi`, `.mkv`, `.webm`
+- Audio: `.wav`, `.mp3`, `.ogg`, `.flac`, `.m4a`
+- Text: `.txt`, `.md`
+
+**Maximum file size:** 20MB
+
+### Example Response (Image)
+
 ```json
 {
+  "success": true,
   "scan_id": "0x99a2b3c4",
-  "filename": "deepfake_sample.mp4",
-  "latency": "1.42s",
-  "score": 88,
+  "filename": "photo.jpg",
+  "modality": "image",
+  "classification": "Likely synthetic",
   "verdict": "SYNTHETIC",
-  "breakdown": {
-    "visual": 88,
-    "audio": 82,
-    "linguistic": 0
-  },
-  "anomalies": [
-    { "id": 1, "label": "GAN Boundary Anomaly", "severity": "CRITICAL" },
-    { "id": 2, "label": "Temporal AI Confidence Flicker", "severity": "HIGH" }
+  "score": 87,
+  "confidence": "High",
+  "processing_time_ms": 1420,
+  "latency": "1.420s",
+  "model": "Ateeqq/ai-vs-human-image-detector",
+  "evidence": [
+    {
+      "name": "Image AI classifier (SigLIP)",
+      "score": 91.2,
+      "status": "analyzed",
+      "source": "Ateeqq/ai-vs-human-image-detector",
+      "note": "Trained to distinguish real photos from AI-generated images"
+    },
+    {
+      "name": "Face deepfake classifier (ViT)",
+      "status": "not_applicable",
+      "source": "prithivMLmods/Deep-Fake-Detector-v2-Model",
+      "note": "No faces detected in image"
+    },
+    {
+      "name": "EXIF metadata",
+      "status": "unavailable",
+      "source": "exifread",
+      "note": "Metadata absent — common due to screenshots, social media, or compression"
+    },
+    {
+      "name": "Manipulation localization",
+      "status": "not_available",
+      "note": "Pixel-level manipulation localization is not implemented in this version."
+    }
   ],
-  "timeline_spikes": ["0:12", "0:22"]
+  "score_fusion": {
+    "method": "Weighted combination of available model outputs",
+    "components": [
+      { "name": "SigLIP classifier", "weight": "70%" }
+    ],
+    "note": "Only components with valid model outputs contribute to the final score."
+  },
+  "limitations": [
+    "AI detection is probabilistic — results are not definitive proof.",
+    "Detection performance depends on model training distribution and content type.",
+    "Metadata (EXIF) may be missing due to screenshots, social media, or compression — not AI generation.",
+    "Audio analysis uses signal features (MFCC) only — no trained audio deepfake model is integrated.",
+    "Manipulation localization (bounding boxes) is not implemented in this version.",
+    "Models may not generalize to all types of AI-generated content."
+  ]
 }
 ```
 
----
+### Error Responses
 
-## 🖥️ Usage Guide
-
-1. **Upload:** Drag and drop any media asset into the "Scanner" interface.
-2. **Analyze:** Click "Run Detection". PyTorch models will execute sparse frame sampling and spectral analysis.
-3. **Inspect:** View the "Forensic Timeline" to see exactly where AI manipulation was detected.
-4. **Verdict:** Receive a definitive `AUTHENTIC` or `SYNTHETIC` status with a detailed anomaly breakdown.
-
----
-
-## 📸 Screenshots / UI Preview
-
-> [!TIP]
-> **View the Cinematic Dashboard**
-
-| Landing Page | Forensic Scanner | Results Breakdown |
-| :---: | :---: | :---: |
-| ![Landing](https://placehold.co/600x400/0D0D12/FAF8F5?text=Cinematic+Landing) | ![Scanner](https://placehold.co/600x400/0D0D12/FAF8F5?text=Inference+Terminal) | ![Results](https://placehold.co/600x400/0D0D12/FAF8F5?text=Forensic+Timeline) |
+| Status | Meaning |
+|:-------|:--------|
+| 413 | File too large (>20MB) |
+| 415 | Unsupported file type |
+| 422 | Missing required input / text too short |
+| 500 | Model/analysis failure |
 
 ---
 
-## 🧬 AI Models Used
+## 🔐 Privacy & Deployment
 
-Veritas Neural utilizes an ensemble of state-of-the-art models for maximum accuracy:
+### Local Mode (Full Privacy)
+```
+Browser → http://localhost:8000 → Local FastAPI → Local models
+```
+Files processed entirely on your machine. No data sent externally.
 
-- **🖼️ SigLIP (Image):** `Ateeqq/ai-vs-human-image-detector`. Optimized for identifying the subtle patterns in AI-generated photographic content.
-- **👤 ViT Deepfake (Face):** `prithivMLmods/Deep-Fake-Detector-v2-Model`. Focused on face-swap and facial manipulation detection via individual frame crops.
-- **🎙️ MFCC Audio Forensics:** Custom spectral variance analysis using `Librosa` to detect patterns unique to vocoders and neural TTS engines.
-- **📄 RoBERTa (Text):** `Hello-SimpleAI/chatgpt-detector-roberta`. A heavy-lifting transformer model trained to distinguish human prose from LLM (GPT-4, Claude) output.
+### Cloud/Self-Hosted Mode
+```
+Browser → https://your-server.com → Remote FastAPI → Remote models
+```
+Files are sent to the configured backend server. Privacy depends on your server configuration.
 
----
+**To switch modes:** Set `VITE_API_URL` in `frontend/.env`.
 
-## 🔐 Privacy & Design Philosophy
-
-**Privacy is not a feature; it is our foundation.**
-- **Local Sovereignty:** We believe your data should never leave your device. Veritas Neural runs fully air-gapped if needed.
-- **Hardware Agnostic:** Optimized for both CUDA (NVIDIA) and standard CPU processing.
-- **Verification over Trust:** We provide the underlying signals (EXIF, MFCC, GAN tells) so the result is explainable, not just a black-box score.
-
----
-
-## 🚀 Deployment
-
-### Frontend (Vercel)
-The React application is optimized for Vercel deployment. Ensure `VITE_API_URL` points to your active backend instance.
-
-### Backend (Hugging Face Spaces / Docker)
-The backend is Docker-ready. For high-availability, we recommend hosting on Hugging Face Spaces with a persistent storage volume for model caching.
-
+### Docker Deployment
 ```bash
-docker build -t veritas-neural-core .
-docker run -p 7860:7860 veritas-neural-core
+docker build -t veritas-neural .
+docker run -p 7860:7860 -e ALLOWED_ORIGINS=http://localhost:5173 veritas-neural
 ```
 
 ---
 
-## 🧩 Future Improvements
+## ⚠️ Known Limitations
 
-- [ ] **Multi-GPU support** for ultra-fast batch processing.
-- [ ] **browser extension** for real-time social media content verification.
-- [ ] **PDF Forensic Reports** for legal and journalistic documentation.
-- [ ] **Blockchain Provenance** integration for immutable verification logs.
+1. **Audio detection is not reliable** — MFCC variance cannot reliably distinguish AI from real audio. No audio deepfake model is integrated.
+2. **No manipulation localization** — The system classifies the whole image/video but cannot identify *where* manipulation occurred.
+3. **Model generalization** — SigLIP was trained on specific distributions. Novel types of AI-generated content may evade detection.
+4. **Video analysis is frame-based** — No temporal modeling. Frame-level scores are aggregated by median + majority vote.
+5. **EXIF metadata is unreliable** as an AI indicator — screenshots, social media, WhatsApp, and image editing all remove EXIF.
+6. **Results are probabilistic** — A high score does not prove AI generation. A low score does not prove authenticity.
+7. **Text detection confidence** — When model confidence is < 65%, the result is labeled "Uncertain."
 
 ---
 
-## 🤝 Contributing
+## 🚀 Future Improvements
 
-We welcome contributions from forensic researchers and ML engineers. Please open an issue or submit a pull request with detailed documentation of your proposed changes.
+- [ ] Integrate a trained audio anti-spoofing model (AASIST, RawNet2, or wav2vec-based)
+- [ ] Add frequency-domain analysis for images (DCT/FFT artifacts)
+- [ ] Implement face landmark consistency check for deepfakes
+- [ ] Add PDF forensic report generation
+- [ ] Batch file analysis
+- [ ] WebSocket streaming for real-time analysis progress
+- [ ] User authentication with actual session management
 
 ---
 
 ## 📜 License
 
-Distributed under the **MIT License**. See `LICENSE` for more information.
+MIT License. See `LICENSE` for details.
 
 ---
 
-<p align="center">
-  Built with 🔴 by 1SoulHunter1
-</p>
+<p align="center">Built by 1SoulHunter1 — Final Year Engineering Project</p>

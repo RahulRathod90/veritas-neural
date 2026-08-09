@@ -7,11 +7,21 @@ import {
   UploadCloud, FileText, Image as ImageIcon, Video, Terminal,
   AlertTriangle, Lock, User, Mic, Waves, BarChart2, Home,
   Radio, Play, Pause, LogOut, CreditCard, FolderOpen,
-  Star, Download, Key, ArrowUpRight
+  Star, Download, Key, ArrowUpRight, ChevronDown, Info
 } from 'lucide-react'
 
 const Spline = React.lazy(() => import('@splinetool/react-spline'))
 if (typeof window !== 'undefined') { gsap.registerPlugin(ScrollTrigger) }
+
+// ─────────────────────────────────────────────────────────────
+// API URL configuration
+// VITE_API_URL must be set in frontend/.env for local or cloud deployment.
+// No automatic fallback to cloud — local mode requires the backend running locally.
+// ─────────────────────────────────────────────────────────────
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || 'http://127.0.0.1:8000'
+
+// Whether we are in a "self-hosted" context (pointing to localhost)
+const IS_LOCAL = API_URL.includes('localhost') || API_URL.includes('127.0.0.1')
 
 function Navbar({ onNavigate }) {
   const navRef = useRef(null)
@@ -71,14 +81,17 @@ function Hero({ onNavigate }) {
       <div ref={contentRef} className="relative z-10 w-full px-8 pb-16 md:px-16 md:pb-20 max-w-5xl pointer-events-none">
         <div data-hero className="flex items-center gap-3 mb-6">
           <div className="w-8 h-px bg-signal" />
-          <span className="font-mono text-xs text-signal tracking-[0.25em] uppercase">Inference Engine v10.0</span>
+          <span className="font-mono text-xs text-signal tracking-[0.25em] uppercase">Inference Engine v11.0</span>
         </div>
         <h1 className="mb-2 leading-none select-none">
           <span data-hero className="block font-sans font-bold text-offwhite text-[clamp(2.2rem,7vw,6rem)] tracking-tight">Real or Synthetic.</span>
           <span data-hero className="block font-drama text-signal text-[clamp(3.5rem,12vw,10rem)] leading-none">We Know.</span>
         </h1>
+        {/* Accurate privacy claim — reflects actual deployment mode */}
         <p data-hero className="mt-4 font-sans text-offwhite/60 text-base md:text-lg max-w-xl leading-relaxed font-light select-none">
-          An offline, privacy-first forensic engine that detects AI-generated text, deepfake video, manipulated images, and synthetic voice clones — running entirely on your local machine.
+          {IS_LOCAL
+            ? 'Privacy-focused inference with self-hosted local deployment. Supports text, image, audio, and video analysis — models run on your own hardware.'
+            : 'Multimodal AI detection engine for synthetic and manipulated media — text, image, audio, and video. Privacy-focused with self-hosted local deployment support.'}
         </p>
         <div data-hero className="flex flex-wrap gap-4 mt-8 pointer-events-auto">
           <button onClick={() => onNavigate('login')} className="btn-magnetic flex items-center gap-3 px-7 py-4 bg-signal text-offwhite rounded-full font-mono text-sm font-bold uppercase tracking-wider group">
@@ -93,7 +106,7 @@ function Hero({ onNavigate }) {
           {[
             { label: 'Modalities Covered', val: '4' },
             { label: 'Avg. Analysis Time', val: '<2s' },
-            { label: 'Runs Offline', val: '100%' },
+            { label: 'Models', val: '3' },
           ].map(m => (
             <div key={m.label}>
               <div className="font-mono text-2xl font-bold text-signal">{m.val}</div>
@@ -108,9 +121,10 @@ function Hero({ onNavigate }) {
 
 function ShufflerCard() {
   const labels = [
-    { title: 'MFCC Audio Analysis', sub: 'Voice clone detection via spectral variance — low MFCC variance = synthetic speech', icon: <Mic size={16} /> },
-    { title: 'SigLIP Image Detection', sub: 'AI-vs-human SigLIP classifier — trained on real photos, not just studio datasets', icon: <Eye size={16} /> },
-    { title: 'Temporal Video Scoring', sub: 'Sparse frame sampling with blur detection and majority-vote consensus', icon: <Layers size={16} /> },
+    { title: 'SigLIP Image Detection', sub: 'AI-vs-human SigLIP classifier — trained on real photos vs AI-generated images', icon: <Eye size={16} /> },
+    { title: 'ViT Face Deepfake', sub: 'Face-aware ViT deepfake classifier — runs on face crops when faces are detected', icon: <Eye size={16} /> },
+    { title: 'RoBERTa Text Detector', sub: 'Transformer model trained to detect LLM-generated text (GPT-4, Claude, ChatGPT)', icon: <FileText size={16} /> },
+    { title: 'Frame-Level Video Analysis', sub: 'Sparse frame sampling with blur detection — SigLIP applied to individual frames', icon: <Layers size={16} /> },
   ]
   const [stack, setStack] = useState([...labels])
   useEffect(() => {
@@ -146,15 +160,16 @@ function ShufflerCard() {
 
 function TypewriterCard() {
   const messages = [
-    '> INIT: local_inference_engine v10.0',
+    '> INIT: veritas_neural_engine v11.0',
     '> LOADING: PyTorch models from cache...',
     '> PRIMARY: SigLIP ai-vs-human model ready',
-    '> SECONDARY: ViT deepfake detector ready',
+    '> SECONDARY: ViT face deepfake detector ready',
     '> FACE DETECT: OpenCV Haar cascade active',
-    '> EXIF CHECK: Camera metadata verified',
-    '> MFCC: Audio spectral variance computed',
-    '> CALIBRATION: Sigmoid scoring applied',
-    '> VERDICT: Authenticity score generated',
+    '> EXIF CHECK: Metadata presence verified',
+    '> AUDIO: MFCC signal analysis (librosa)',
+    '> TEXT: RoBERTa classifier ready',
+    '> CALIBRATION: Sigmoid score calibration applied',
+    '> VERDICT: Evidence-based classification complete',
   ]
   const [lines, setLines] = useState([''])
   const [msgIdx, setMsgIdx] = useState(0)
@@ -182,7 +197,7 @@ function TypewriterCard() {
       </div>
       <div className="mt-auto pt-6">
         <h3 className="font-sans font-bold text-lg text-ink leading-tight">Local PyTorch Inference</h3>
-        <p className="font-sans text-ink/50 text-sm mt-1">Models download once and run offline on your machine forever.</p>
+        <p className="font-sans text-ink/50 text-sm mt-1">Models download once. Run locally for full privacy — or connect to a self-hosted deployment.</p>
       </div>
     </div>
   )
@@ -192,14 +207,14 @@ function PrivacyCard() {
   const [activeIdx, setActiveIdx] = useState(0)
   useEffect(() => { const id = setInterval(() => setActiveIdx(prev => (prev + 1) % 4), 1400); return () => clearInterval(id) }, [])
   const items = [
-    { label: 'Your files stay on your machine', status: 'GUARANTEED' },
-    { label: 'Zero external API calls made', status: 'CONFIRMED' },
+    { label: 'Self-hosted local deployment supported', status: 'SUPPORTED' },
+    { label: 'No third-party AI API calls', status: 'CONFIRMED' },
     { label: 'Models cached locally after first run', status: 'ACTIVE' },
-    { label: 'Works without internet connection', status: 'VERIFIED' },
+    { label: 'Local mode: fully offline after setup', status: 'VERIFIED' },
   ]
   return (
     <div className="artifact-card card-noise p-7 flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-6"><Lock size={14} className="text-signal" /><span className="font-mono text-xs text-muted tracking-wider uppercase">Privacy Guarantee</span></div>
+      <div className="flex items-center gap-2 mb-6"><Lock size={14} className="text-signal" /><span className="font-mono text-xs text-muted tracking-wider uppercase">Privacy Features</span></div>
       <div className="flex flex-col gap-3 flex-1 justify-center">
         {items.map((item, i) => (
           <div key={i} className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-400 ${activeIdx === i ? 'bg-signal/10 border-signal/30' : 'bg-ink/5 border-ink/5'}`}>
@@ -209,8 +224,8 @@ function PrivacyCard() {
         ))}
       </div>
       <div className="mt-auto pt-6">
-        <h3 className="font-sans font-bold text-lg text-ink leading-tight">Zero-Trust Privacy</h3>
-        <p className="font-sans text-ink/50 text-sm mt-1">Your files never leave your device. No cloud. No logs.</p>
+        <h3 className="font-sans font-bold text-lg text-ink leading-tight">Privacy-Focused Inference</h3>
+        <p className="font-sans text-ink/50 text-sm mt-1">Self-host the backend locally for full data sovereignty. No files sent to third-party APIs.</p>
       </div>
     </div>
   )
@@ -232,7 +247,7 @@ function Features() {
             <div className="flex items-center gap-3 mb-3"><div className="w-6 h-px bg-signal" /><span className="font-mono text-xs text-signal tracking-[0.2em] uppercase">How It Works</span></div>
             <h2 className="font-sans font-bold text-4xl md:text-5xl text-ink leading-tight tracking-tight">Core<br /><span className="font-drama text-signal">Capabilities</span></h2>
           </div>
-          <p className="font-sans text-ink/50 text-sm max-w-xs leading-relaxed">Four machine learning models running locally — no API keys, no internet required after setup.</p>
+          <p className="font-sans text-ink/50 text-sm max-w-xs leading-relaxed">Four detection modalities powered by PyTorch models — deployable locally for full privacy.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="feature-card"><ShufflerCard /></div>
@@ -265,16 +280,16 @@ function Philosophy() {
           <span data-word className="inline-block mr-[0.3em] text-offwhite/40 italic">third-party cloud servers.</span>
         </p>
         <div className="mt-4">
-          <p className="font-sans text-offwhite text-xl md:text-2xl leading-relaxed">{['We', 'run', 'everything:'].map((w, i) => <span key={i} data-word className="inline-block mr-[0.3em]">{w}</span>)}</p>
+          <p className="font-sans text-offwhite text-xl md:text-2xl leading-relaxed">{['We', 'support:'].map((w, i) => <span key={i} data-word className="inline-block mr-[0.3em]">{w}</span>)}</p>
           <p className="font-drama text-signal text-[clamp(2.5rem,7vw,6rem)] leading-none mt-2">
-            {['locally,', 'offline,'].map((w, i) => <span key={i} data-word className="inline-block mr-[0.25em]">{w}</span>)}<br />
-            {['on', 'your', 'device.'].map((w, i) => <span key={i} data-word className="inline-block mr-[0.25em]">{w}</span>)}
+            {['self-hosted,', 'local,'].map((w, i) => <span key={i} data-word className="inline-block mr-[0.25em]">{w}</span>)}<br />
+            {['private', 'inference.'].map((w, i) => <span key={i} data-word className="inline-block mr-[0.25em]">{w}</span>)}
           </p>
         </div>
         <div className="mt-16 pt-10 border-t border-offwhite/10 flex flex-col md:flex-row gap-12">
           {[
             { n: '4', label: 'Detection modalities: text, image, audio, and video' },
-            { n: 'Zero', label: 'Files uploaded to any external server — ever' },
+            { n: '3', label: 'Pretrained transformer models (SigLIP, ViT, RoBERTa)' },
             { n: '~800MB', label: 'Total model size, downloaded once on first run' },
           ].map(s => (
             <div key={s.n} data-word className="inline-block">
@@ -332,7 +347,7 @@ function Protocol() {
           <div className="w-full lg:w-1/2">
             <span className="font-mono text-sm tracking-widest text-signal">STEP 02</span>
             <h2 className="font-drama text-[clamp(4rem,10vw,8rem)] leading-none text-offwhite mt-2 mb-6">Analyze.</h2>
-            <p className="font-sans text-xl max-w-md leading-relaxed text-offwhite/60">Local PyTorch models run on your hardware — a SigLIP image classifier, a ViT deepfake detector, an MFCC audio analyser, and a RoBERTa text classifier all working together.</p>
+            <p className="font-sans text-xl max-w-md leading-relaxed text-offwhite/60">Local PyTorch models run on your hardware — a SigLIP image classifier, a ViT face deepfake detector, and a RoBERTa text classifier all working together.</p>
           </div>
           <div className="w-full lg:w-1/2 flex justify-center relative">
             <div className="relative w-80 h-80 border border-offwhite/10 rounded-3xl overflow-hidden bg-[#0a0a0a]">
@@ -349,7 +364,7 @@ function Protocol() {
           <div className="w-full lg:w-1/2">
             <span className="font-mono text-sm tracking-widest text-ink/60 uppercase">Step 03</span>
             <h2 className="font-drama text-[clamp(4rem,10vw,8rem)] leading-none text-offwhite mt-2 mb-6">Verify.</h2>
-            <p className="font-sans text-xl max-w-md leading-relaxed text-offwhite/90">Get a 0–100 authenticity score, a clear AUTHENTIC or SYNTHETIC verdict, a breakdown by modality, and a list of specific anomalies detected — all in under two seconds.</p>
+            <p className="font-sans text-xl max-w-md leading-relaxed text-offwhite/90">Get a 0–100 AI generation probability, a classification verdict, a transparent score breakdown, and a list of evidence items produced by actual models — all in under two seconds.</p>
           </div>
           <div className="w-full lg:w-1/2 flex justify-center">
             <div className="relative w-64 h-64 flex items-center justify-center">
@@ -373,9 +388,36 @@ function Pricing() {
     return () => ctx.revert()
   }, [])
   const tiers = [
-    { name: 'Starter', price: '$0', period: '', desc: 'Run it yourself — open source, fully local.', features: ['Self-hosted on your machine', 'All 4 modalities included', 'Text, image, audio & video', 'Community support'], highlight: false },
-    { name: 'Professional', price: '$49', period: '/mo', desc: 'For journalists, researchers, and trust & safety teams.', features: ['All 4 modalities', 'Priority model updates', 'API access (localhost)', 'Forensic PDF reports', 'Email support'], highlight: true },
-    { name: 'Enterprise', price: 'Custom', period: '', desc: 'Air-gapped deployments for sensitive organisations.', features: ['On-premise installation', 'Custom model fine-tuning', 'SLA guarantee', 'Dedicated engineer', 'SIEM integration'], highlight: false },
+    {
+      name: 'Open Source',
+      price: 'Free',
+      period: '',
+      badge: null,
+      desc: 'Run it yourself — self-hosted, fully local deployment.',
+      features: ['Self-hosted on your machine', 'All 4 modalities included', 'Text, image, audio & video', 'Community support', 'Full source code access'],
+      highlight: false,
+      cta: 'Get Started',
+    },
+    {
+      name: 'Professional',
+      price: 'Coming Soon',
+      period: '',
+      badge: 'Coming Soon',
+      desc: 'For journalists, researchers, and trust & safety teams.',
+      features: ['All 4 modalities', 'Priority model updates', 'API access', 'Forensic PDF reports', 'Email support'],
+      highlight: true,
+      cta: 'Notify Me',
+    },
+    {
+      name: 'Enterprise',
+      price: 'Coming Soon',
+      period: '',
+      badge: 'Coming Soon',
+      desc: 'Air-gapped deployments for sensitive organisations.',
+      features: ['On-premise installation', 'Custom model fine-tuning', 'SLA guarantee', 'Dedicated engineer', 'SIEM integration'],
+      highlight: false,
+      cta: 'Contact Us',
+    },
   ]
   return (
     <section ref={sectionRef} className="section-pad bg-offwhite" id="pricing">
@@ -383,22 +425,35 @@ function Pricing() {
         <div className="text-center mb-14">
           <div className="flex items-center justify-center gap-3 mb-3"><div className="w-6 h-px bg-signal" /><span className="font-mono text-xs text-signal tracking-[0.2em] uppercase">Pricing</span><div className="w-6 h-px bg-signal" /></div>
           <h2 className="font-sans font-bold text-4xl md:text-5xl text-ink leading-tight tracking-tight">Choose Your<br /><span className="font-drama text-signal">Defense Layer.</span></h2>
+          <p className="font-sans text-ink/40 text-sm mt-4">Professional and Enterprise tiers are in development.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           {tiers.map(tier => (
-            <div key={tier.name} className={`pricing-card flex flex-col rounded-4xl p-8 border transition-all duration-300 ${tier.highlight ? 'bg-ink border-ink shadow-2xl scale-[1.02] md:scale-105' : 'bg-offwhite border-ink/10 hover:border-signal/30'}`}>
+            <div key={tier.name} className={`pricing-card flex flex-col rounded-4xl p-8 border transition-all duration-300 relative overflow-hidden ${tier.highlight ? 'bg-ink border-ink shadow-2xl scale-[1.02] md:scale-105' : 'bg-offwhite border-ink/10 hover:border-signal/30'}`}>
+              {tier.badge && (
+                <div className="absolute top-5 right-5">
+                  <span className="font-mono text-[9px] font-bold uppercase tracking-widest bg-signal/20 text-signal border border-signal/30 px-2 py-0.5 rounded-full">{tier.badge}</span>
+                </div>
+              )}
               <div className={`font-mono text-xs tracking-widest uppercase mb-4 ${tier.highlight ? 'text-signal' : 'text-muted'}`}>{tier.name}</div>
               <div className="flex items-baseline gap-1 mb-2">
-                <span className={`font-sans font-bold text-4xl ${tier.highlight ? 'text-offwhite' : 'text-ink'}`}>{tier.price}</span>
+                <span className={`font-sans font-bold text-3xl ${tier.highlight ? 'text-offwhite' : 'text-ink'}`}>{tier.price}</span>
                 <span className={`font-mono text-sm ${tier.highlight ? 'text-offwhite/40' : 'text-muted'}`}>{tier.period}</span>
               </div>
               <p className={`font-sans text-sm mb-6 leading-relaxed ${tier.highlight ? 'text-offwhite/50' : 'text-ink/50'}`}>{tier.desc}</p>
               <ul className="flex flex-col gap-3 mb-8 flex-1">
                 {tier.features.map(f => (<li key={f} className="flex items-center gap-3"><CheckCircle size={14} className={tier.highlight ? 'text-signal flex-shrink-0' : 'text-ink/30 flex-shrink-0'} /><span className={`font-sans text-sm ${tier.highlight ? 'text-offwhite/70' : 'text-ink/60'}`}>{f}</span></li>))}
               </ul>
-              <button className={`btn-magnetic flex items-center justify-center gap-2 py-4 rounded-full font-mono text-xs font-bold uppercase tracking-wider mt-auto ${tier.highlight ? 'bg-signal text-offwhite' : 'bg-ink/5 text-ink border border-ink/10 hover:border-signal/40'}`}>
+              <button
+                onClick={() => {
+                  if (tier.badge) {
+                    // Coming soon — link to contact section
+                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className={`btn-magnetic flex items-center justify-center gap-2 py-4 rounded-full font-mono text-xs font-bold uppercase tracking-wider mt-auto ${tier.highlight ? 'bg-signal text-offwhite' : 'bg-ink/5 text-ink border border-ink/10 hover:border-signal/40'}`}>
                 <span className={`btn-slide rounded-full ${tier.highlight ? 'bg-ink' : 'bg-signal'}`} />
-                <span className="relative z-10">Select Plan</span>
+                <span className="relative z-10">{tier.cta}</span>
               </button>
             </div>
           ))}
@@ -409,10 +464,8 @@ function Pricing() {
 }
 
 function Contact() {
-  const [sent, setSent] = useState(false)
-  const [sending, setSending] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', message: '' })
-  const handleSubmit = (e) => { e.preventDefault(); if (sending || sent) return; setSending(true); setTimeout(() => { setSending(false); setSent(true) }, 1800) }
+  // Contact form is a demo — no backend email delivery is configured.
   return (
     <section id="contact" className="section-pad bg-paper">
       <div className="max-w-6xl mx-auto">
@@ -420,9 +473,9 @@ function Contact() {
           <div>
             <div className="flex items-center gap-3 mb-6"><div className="w-6 h-px bg-signal" /><span className="font-mono text-xs text-signal tracking-[0.2em] uppercase">Get In Touch</span></div>
             <h2 className="font-sans font-bold text-5xl md:text-6xl text-ink leading-tight tracking-tight mb-6">Let's<br /><span className="font-drama text-signal">Talk.</span></h2>
-            <p className="font-sans text-ink/50 text-base leading-relaxed max-w-sm mb-10">Reach out for enterprise deployments, research collaborations, or questions about the detection engine. We typically respond within a few hours.</p>
+            <p className="font-sans text-ink/50 text-base leading-relaxed max-w-sm mb-10">Reach out for enterprise deployments, research collaborations, or questions about the detection engine.</p>
             <div className="space-y-5">
-              {[{ label: 'Response Time', val: '< 4 hours' }, { label: 'Project', val: 'Veritas Neural v10.0' }, { label: 'Contact', val: 'hello@veritasneural.ai' }].map(r => (
+              {[{ label: 'Project', val: 'Veritas Neural v11.0' }, { label: 'Contact', val: 'hello@veritasneural.ai' }].map(r => (
                 <div key={r.label} className="flex items-center justify-between border-b border-ink/8 pb-4">
                   <span className="font-mono text-[10px] text-muted uppercase tracking-widest">{r.label}</span>
                   <span className="font-mono text-xs text-ink">{r.val}</span>
@@ -431,23 +484,22 @@ function Contact() {
             </div>
           </div>
           <div className="bg-ink rounded-[2rem] p-10">
-            {sent ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
-                <CheckCircle size={40} className="text-signal" />
-                <p className="font-sans font-bold text-2xl text-offwhite">Message Received.</p>
-                <p className="font-mono text-[11px] text-offwhite/30 uppercase tracking-widest">We'll get back to you shortly.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="space-y-1.5"><label className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest">Name</label><input type="text" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name" className="w-full bg-transparent border-b border-offwhite/20 pb-2 font-sans text-sm text-offwhite placeholder:text-offwhite/20 outline-none focus:border-signal transition-colors" /></div>
-                <div className="space-y-1.5"><label className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest">Email</label><input type="email" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="your@email.com" className="w-full bg-transparent border-b border-offwhite/20 pb-2 font-sans text-sm text-offwhite placeholder:text-offwhite/20 outline-none focus:border-signal transition-colors" /></div>
-                <div className="space-y-1.5"><label className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest">Message</label><textarea required rows={4} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} placeholder="Describe your use case or question..." className="w-full bg-transparent border-b border-offwhite/20 pb-2 font-sans text-sm text-offwhite placeholder:text-offwhite/20 outline-none focus:border-signal resize-none transition-colors leading-relaxed" /></div>
-                <button type="submit" disabled={sending} className="btn-magnetic w-full flex items-center justify-center gap-3 py-4 rounded-full bg-signal text-offwhite font-mono text-sm font-bold uppercase tracking-widest disabled:opacity-60">
-                  <span className="btn-slide bg-ink rounded-full" />
-                  <span className="relative z-10 flex items-center gap-2">{sending ? <><ScanLine size={14} className="animate-pulse" /> Sending...</> : <><Zap size={14} /> Send Message</>}</span>
-                </button>
-              </form>
-            )}
+            {/* Demo form notice */}
+            <div className="flex items-start gap-3 bg-signal/10 border border-signal/20 rounded-xl p-3 mb-6">
+              <Info size={13} className="text-signal flex-shrink-0 mt-0.5" />
+              <p className="font-mono text-[10px] text-offwhite/60 leading-relaxed uppercase tracking-widest">
+                Demo form — messages are not delivered. To contact us, email <span className="text-signal">hello@veritasneural.ai</span> directly.
+              </p>
+            </div>
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+              <div className="space-y-1.5"><label className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest">Name</label><input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name" className="w-full bg-transparent border-b border-offwhite/20 pb-2 font-sans text-sm text-offwhite placeholder:text-offwhite/20 outline-none focus:border-signal transition-colors" /></div>
+              <div className="space-y-1.5"><label className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest">Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="your@email.com" className="w-full bg-transparent border-b border-offwhite/20 pb-2 font-sans text-sm text-offwhite placeholder:text-offwhite/20 outline-none focus:border-signal transition-colors" /></div>
+              <div className="space-y-1.5"><label className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest">Message</label><textarea rows={4} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} placeholder="Describe your use case or question..." className="w-full bg-transparent border-b border-offwhite/20 pb-2 font-sans text-sm text-offwhite placeholder:text-offwhite/20 outline-none focus:border-signal resize-none transition-colors leading-relaxed" /></div>
+              <button type="button" onClick={() => { window.location.href = `mailto:hello@veritasneural.ai?subject=Veritas Neural Inquiry&body=${encodeURIComponent(form.message)}` }} className="btn-magnetic w-full flex items-center justify-center gap-3 py-4 rounded-full bg-signal text-offwhite font-mono text-sm font-bold uppercase tracking-widest">
+                <span className="btn-slide bg-ink rounded-full" />
+                <span className="relative z-10 flex items-center gap-2"><Zap size={14} /> Open Email Client</span>
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -456,21 +508,29 @@ function Contact() {
 }
 
 function Footer() {
+  // GitHub URL — replace with actual repository URL when published
+  const GITHUB_URL = 'https://github.com/1SoulHunter1/veritas-neural-core'
   return (
     <footer className="bg-ink rounded-t-5xl px-8 md:px-16 pt-16 pb-8 mt-0">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pb-12 border-b border-offwhite/10">
           <div className="md:col-span-2">
             <div className="font-sans font-bold text-2xl text-offwhite tracking-tighter mb-3">Veritas Neural<span className="text-signal">.</span></div>
-            <p className="font-sans text-offwhite/40 text-sm leading-relaxed max-w-xs">An offline, privacy-first detection engine for AI-generated text, images, audio, and video. Your files never leave your machine.</p>
+            <p className="font-sans text-offwhite/40 text-sm leading-relaxed max-w-xs">A privacy-focused multimodal detection engine for AI-generated text, images, audio, and video. Self-host for full data sovereignty.</p>
           </div>
           <div>
             <div className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest mb-4">Technology</div>
-            {['Local Inference', 'Image Detection', 'Audio Analysis', 'Text Detection', 'Video Forensics'].map(l => <a key={l} href="#" className="link-hover block font-sans text-sm text-offwhite/50 hover:text-signal mb-2 transition-colors">{l}</a>)}
+            {['Local Inference', 'Image Detection', 'Audio Analysis', 'Text Detection', 'Video Forensics'].map(l => <a key={l} href="#technology" className="link-hover block font-sans text-sm text-offwhite/50 hover:text-signal mb-2 transition-colors">{l}</a>)}
           </div>
           <div>
             <div className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest mb-4">Project</div>
-            {['About', 'How It Works', 'Pricing', 'Contact', 'GitHub'].map(l => <a key={l} href="#" className="link-hover block font-sans text-sm text-offwhite/50 hover:text-signal mb-2 transition-colors">{l}</a>)}
+            {[
+              { label: 'About', href: '#technology' },
+              { label: 'How It Works', href: '#protocol' },
+              { label: 'Pricing', href: '#pricing' },
+              { label: 'Contact', href: '#contact' },
+              { label: 'GitHub', href: GITHUB_URL },
+            ].map(l => <a key={l.label} href={l.href} target={l.href.startsWith('http') ? '_blank' : undefined} rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined} className="link-hover block font-sans text-sm text-offwhite/50 hover:text-signal mb-2 transition-colors">{l.label}</a>)}
           </div>
         </div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8">
@@ -483,10 +543,14 @@ function Footer() {
 }
 
 function LoginView({ onNavigate }) {
-  const [clearanceId, setClearanceId] = useState('')
-  const [cryptoKey, setCryptoKey] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const handleAuth = () => { if (loading) return; setLoading(true); setTimeout(() => { setLoading(false); onNavigate('dashboard') }, 1500) }
+  const handleAuth = () => {
+    if (loading) return
+    setLoading(true)
+    setTimeout(() => { setLoading(false); onNavigate('dashboard') }, 1500)
+  }
   const handleKey = (e) => { if (e.key === 'Enter') handleAuth() }
   return (
     <div className="h-[100dvh] bg-ink flex flex-col items-center justify-center relative overflow-hidden">
@@ -494,18 +558,18 @@ function LoginView({ onNavigate }) {
       <button onClick={() => onNavigate('landing')} className="absolute top-6 left-6 flex items-center gap-2 font-mono text-xs text-offwhite/30 hover:text-signal uppercase tracking-wider transition-colors"><Home size={13} /> Home</button>
       <div className="bg-paper rounded-[2rem] p-10 md:p-14 max-w-md w-full mx-4 shadow-2xl relative">
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3"><Lock size={11} className="text-signal" /><span className="font-mono text-xs text-signal uppercase tracking-[0.25em]">Restricted Access</span></div>
+          <div className="flex items-center gap-2 mb-3"><Lock size={11} className="text-signal" /><span className="font-mono text-xs text-signal uppercase tracking-[0.25em]">Access Portal</span></div>
           <h1 className="font-sans text-3xl font-bold text-ink leading-tight">Sign In.</h1>
-          <p className="font-mono text-[11px] text-muted mt-2 uppercase tracking-wider">Enter your credentials to continue</p>
+          <p className="font-mono text-[11px] text-muted mt-2 uppercase tracking-wider">Enter credentials to access the scanner</p>
         </div>
         <div className="space-y-6 mb-8">
           <div className="space-y-1.5">
             <label className="font-mono text-[10px] text-muted uppercase tracking-widest">Username</label>
-            <div className="flex items-center gap-3 border-b border-ink/20 pb-2 focus-within:border-signal transition-colors"><User size={14} className="text-ink/30 flex-shrink-0" /><input type="text" value={clearanceId} onChange={e => setClearanceId(e.target.value)} onKeyDown={handleKey} placeholder="your.username" className="flex-1 bg-transparent font-mono text-sm text-ink placeholder:text-ink/25 outline-none" /></div>
+            <div className="flex items-center gap-3 border-b border-ink/20 pb-2 focus-within:border-signal transition-colors"><User size={14} className="text-ink/30 flex-shrink-0" /><input type="text" value={username} onChange={e => setUsername(e.target.value)} onKeyDown={handleKey} placeholder="your.username" className="flex-1 bg-transparent font-mono text-sm text-ink placeholder:text-ink/25 outline-none" /></div>
           </div>
           <div className="space-y-1.5">
             <label className="font-mono text-[10px] text-muted uppercase tracking-widest">Password</label>
-            <div className="flex items-center gap-3 border-b border-ink/20 pb-2 focus-within:border-signal transition-colors"><Lock size={14} className="text-ink/30 flex-shrink-0" /><input type="password" value={cryptoKey} onChange={e => setCryptoKey(e.target.value)} onKeyDown={handleKey} placeholder="••••••••••••" className="flex-1 bg-transparent font-mono text-sm text-ink placeholder:text-ink/25 outline-none" /></div>
+            <div className="flex items-center gap-3 border-b border-ink/20 pb-2 focus-within:border-signal transition-colors"><Lock size={14} className="text-ink/30 flex-shrink-0" /><input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={handleKey} placeholder="••••••••••••" className="flex-1 bg-transparent font-mono text-sm text-ink placeholder:text-ink/25 outline-none" /></div>
           </div>
         </div>
         <button onClick={handleAuth} disabled={loading} className="btn-magnetic w-full flex items-center justify-center gap-3 py-4 rounded-full bg-ink text-offwhite font-mono text-sm font-bold uppercase tracking-widest transition-all duration-300 disabled:opacity-60">
@@ -517,14 +581,120 @@ function LoginView({ onNavigate }) {
   )
 }
 
+// Sample archive data — clearly labeled as demo data
 const ARCHIVE_ROWS = [
-  { id: '0x99a2...', modality: 'Video', verdict: 'SYNTHETIC', conf: '88.0', anomaly: 'Temporal AI Confidence Flicker + GAN Boundary', date: '2026-03-16' },
-  { id: '0x11b8...', modality: 'Text', verdict: 'AUTHENTIC', conf: '91.0', anomaly: 'None detected', date: '2026-03-16' },
-  { id: '0xCC41...', modality: 'Audio', verdict: 'SYNTHETIC', conf: '85.0', anomaly: 'Voice Clone Signature (MFCC Variance: 62.3)', date: '2026-03-15' },
-  { id: '0x7E2D...', modality: 'Image', verdict: 'SYNTHETIC', conf: '79.0', anomaly: 'Camera EXIF Metadata Absent + GAN Boundary', date: '2026-03-15' },
-  { id: '0x5F32...', modality: 'Image', verdict: 'AUTHENTIC', conf: '88.0', anomaly: 'None detected', date: '2026-03-14' },
+  { id: '0x99a2...', modality: 'Image', verdict: 'SYNTHETIC', conf: '87', anomaly: 'SigLIP classifier — high AI probability', date: '2026-03-16' },
+  { id: '0x11b8...', modality: 'Text', verdict: 'AUTHENTIC', conf: '91', anomaly: 'RoBERTa — human-written', date: '2026-03-16' },
+  { id: '0xCC41...', modality: 'Audio', verdict: 'UNCERTAIN', conf: '50', anomaly: 'Audio signal analysis only — no deepfake model', date: '2026-03-15' },
+  { id: '0x7E2D...', modality: 'Image', verdict: 'SYNTHETIC', conf: '79', anomaly: 'SigLIP high confidence — no EXIF metadata', date: '2026-03-15' },
+  { id: '0x5F32...', modality: 'Image', verdict: 'AUTHENTIC', conf: '88', anomaly: 'None significant', date: '2026-03-14' },
 ]
 
+// ─────────────────────────────────────────────────────────────
+// Limitations expandable section
+// ─────────────────────────────────────────────────────────────
+function LimitationsSection({ limitations }) {
+  const [open, setOpen] = useState(false)
+  if (!limitations || limitations.length === 0) return null
+  return (
+    <div className="bg-white/[0.02] border border-signal/20 rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-white/[0.03] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Info size={13} className="text-signal flex-shrink-0" />
+          <span className="font-mono text-[10px] text-signal uppercase tracking-widest">Important Limitations</span>
+        </div>
+        <ChevronDown size={14} className={`text-signal transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="border-t border-white/10 p-4 flex flex-col gap-2">
+          {limitations.map((l, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <div className="w-1 h-1 rounded-full bg-signal/60 flex-shrink-0 mt-1.5" />
+              <p className="font-sans text-xs text-offwhite/50 leading-relaxed">{l}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Evidence item renderer
+// ─────────────────────────────────────────────────────────────
+function EvidenceItem({ item }) {
+  const statusColors = {
+    analyzed:       'text-green-400 border-green-500/20 bg-green-500/5',
+    unavailable:    'text-offwhite/30 border-white/10 bg-white/[0.02]',
+    not_applicable: 'text-offwhite/30 border-white/10 bg-white/[0.02]',
+    not_available:  'text-offwhite/30 border-white/10 bg-white/[0.02]',
+    error:          'text-signal/70 border-signal/20 bg-signal/5',
+  }
+  const statusLabel = {
+    analyzed:       'Analyzed',
+    unavailable:    'Unavailable',
+    not_applicable: 'N/A',
+    not_available:  'Not Available',
+    error:          'Error',
+  }
+  const statusClass = statusColors[item.status] || statusColors.unavailable
+  const label = statusLabel[item.status] || item.status
+
+  return (
+    <div className={`border rounded-xl p-3 flex flex-col gap-1.5 ${statusClass}`}>
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-offwhite/80">{item.name}</span>
+        <span className={`font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full border ${statusClass}`}>{label}</span>
+      </div>
+      {item.score !== undefined && (
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex-1 h-1 bg-black/40 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full ${item.score >= 65 ? 'bg-signal' : 'bg-white/30'}`} style={{ width: `${item.score}%` }} />
+          </div>
+          <span className={`font-mono text-xs font-bold ${item.score >= 65 ? 'text-signal' : 'text-offwhite/60'}`}>{item.score}%</span>
+        </div>
+      )}
+      {item.ai_probability !== undefined && item.ai_probability !== null && (
+        <div className="flex items-center gap-2 mt-1">
+          <span className="font-mono text-[9px] text-offwhite/40 uppercase">AI Prob:</span>
+          <div className="flex-1 h-1 bg-black/40 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full ${item.ai_probability >= 65 ? 'bg-signal' : 'bg-white/30'}`} style={{ width: `${item.ai_probability}%` }} />
+          </div>
+          <span className={`font-mono text-[10px] font-bold ${item.ai_probability >= 65 ? 'text-signal' : 'text-offwhite/60'}`}>{item.ai_probability}%</span>
+        </div>
+      )}
+      {item.classification && (
+        <span className="font-sans text-[11px] text-offwhite/60">{item.classification}</span>
+      )}
+      {item.mfcc_variance !== undefined && item.mfcc_variance !== null && (
+        <span className="font-mono text-[10px] text-offwhite/40">MFCC variance: {item.mfcc_variance} | Duration: {item.duration_sec}s</span>
+      )}
+      {item.frames_analyzed !== undefined && (
+        <span className="font-mono text-[10px] text-offwhite/40">
+          Frames analyzed: {item.frames_analyzed} / {item.frames_total}
+          {item.median_score_pct !== null && ` | Median score: ${item.median_score_pct}%`}
+        </span>
+      )}
+      {item.fields && Object.keys(item.fields).length > 0 && (
+        <div className="flex flex-col gap-0.5 mt-1">
+          {Object.entries(item.fields).slice(0, 4).map(([k, v]) => (
+            <span key={k} className="font-mono text-[9px] text-offwhite/30">{k.replace(/_/g, ' ')}: {v}</span>
+          ))}
+        </div>
+      )}
+      {item.note && (
+        <p className="font-sans text-[10px] text-offwhite/30 leading-relaxed italic">{item.note}</p>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Main Scanner Panel
+// ─────────────────────────────────────────────────────────────
 function ScannerPanel() {
   const [file, setFile] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -532,206 +702,369 @@ function ScannerPanel() {
   const [results, setResults] = useState(false)
   const [scanData, setScanData] = useState(null)
   const [progress, setProgress] = useState(0)
+  const [errorMsg, setErrorMsg] = useState(null)
+  const [textInput, setTextInput] = useState('')
+  const [inputMode, setInputMode] = useState('file') // 'file' | 'text'
   const fileRef = useRef(null)
   const intervalRef = useRef(null)
 
-  const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f) setFile(f) }
+  const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f) { setFile(f); setErrorMsg(null) } }
+
   const handleAnalyze = async () => {
-    if (!file || analyzing) return
-    setAnalyzing(true); setResults(false); setScanData(null); setProgress(0)
-    intervalRef.current = setInterval(() => setProgress(p => p >= 92 ? 92 : p + (92 / 30)), 100)
+    if (analyzing) return
+    if (inputMode === 'file' && !file) return
+    if (inputMode === 'text' && !textInput.trim()) return
+
+    setAnalyzing(true); setResults(false); setScanData(null); setProgress(0); setErrorMsg(null)
     try {
-      const form = new FormData(); form.append('file', file)
-      let API_URL = import.meta.env.VITE_API_URL;
-      if (!API_URL || API_URL === 'undefined') API_URL = 'https://sheikfawaz-veritas-neural-core.hf.space';
-      const res = await fetch(`${API_URL}/api/analyze`, {
-        method: 'POST',
-        body: form
-      })
-      if (!res.ok) throw new Error(`Server error ${res.status}`)
-      const data = await res.json()
+      const apiUrl = API_URL
+      const candidates = [
+        apiUrl,
+        apiUrl.includes('127.0.0.1') ? apiUrl.replace('127.0.0.1', 'localhost') : apiUrl.replace('localhost', '127.0.0.1'),
+        'http://127.0.0.1:8000',
+        'http://localhost:8000',
+        'http://127.0.0.1:7860',
+        'http://localhost:7860',
+      ].filter((u, i, a) => u && a.indexOf(u) === i)
+
+      let data = null
+      let lastErr = null
+
+      for (const url of candidates) {
+        try {
+          const bodyForm = new FormData()
+          if (inputMode === 'text') {
+            bodyForm.append('text_payload', textInput.trim())
+          } else {
+            bodyForm.append('file', file)
+          }
+
+          const controller = new AbortController()
+          const timeoutId  = setTimeout(() => controller.abort(), 60000)
+
+          const res = await fetch(`${url}/api/analyze`, {
+            method: 'POST',
+            body: bodyForm,
+            signal: controller.signal,
+          })
+          clearTimeout(timeoutId)
+
+          if (res.ok) {
+            data = await res.json()
+            break
+          } else {
+            let detail = `Server error ${res.status}`
+            try { const j = await res.json(); detail = j.detail || detail } catch {}
+            lastErr = new Error(detail)
+            if (res.status < 500) break // Client error (e.g. 413, 415, 422) — do not fallback
+          }
+        } catch (err) {
+          lastErr = err
+        }
+      }
+
+      if (!data) {
+        clearInterval(intervalRef.current); setAnalyzing(false); setProgress(0)
+        const detailMsg = lastErr ? (lastErr.message || String(lastErr)) : 'Connection failed'
+        setErrorMsg(`Analysis failed: ${detailMsg}`)
+        return
+      }
+
       clearInterval(intervalRef.current); setProgress(100)
       setTimeout(() => { setAnalyzing(false); setScanData(data); setResults(true) }, 300)
     } catch (err) {
       clearInterval(intervalRef.current); setAnalyzing(false); setProgress(0)
-      alert(`Backend unreachable.\nRun: python main.py\n\n${err.message}`)
+      setErrorMsg(`Analysis failed: ${err.message}`)
     }
   }
-  const handleReset = () => { clearInterval(intervalRef.current); setFile(null); setResults(false); setScanData(null); setAnalyzing(false); setProgress(0) }
-  const fileUrl = useMemo(() => file ? URL.createObjectURL(file) : null, [file])
-  const isText = file?.type?.includes('text') || file?.name?.endsWith('.txt')
-  const isImage = file?.type?.includes('image')
 
-  if (results) return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between bg-[#111113] border border-white/[0.08] p-4 rounded-2xl shadow-lg">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"><CheckCircle size={18} className="text-green-400" /></div>
-          <div><p className="font-mono text-xs font-bold text-offwhite uppercase tracking-wider">Analysis Complete</p><p className="font-sans text-sm text-offwhite/50">{file?.name}</p></div>
-        </div>
-        <div className="flex items-center gap-8 px-6 border-l border-white/10">
-          <div className="flex flex-col"><span className="font-mono text-[9px] text-offwhite/40 uppercase tracking-widest">Latency</span><span className="font-mono text-xs text-offwhite">{scanData?.latency ?? '—'}</span></div>
-          <div className="flex flex-col"><span className="font-mono text-[9px] text-offwhite/40 uppercase tracking-widest">Scan ID</span><span className="font-mono text-xs text-offwhite">{scanData?.scan_id ?? '—'}</span></div>
-        </div>
-        <button onClick={handleReset} className="ml-4 px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-mono text-xs text-offwhite uppercase tracking-wider transition-all">New Scan</button>
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 flex flex-col gap-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl rounded-3xl p-5 flex flex-col gap-4 shadow-xl hover:shadow-2xl transition-all duration-500 hover:border-white/[0.15]">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest flex items-center gap-2">
-                  {isText ? <FileText size={12} /> : isImage ? <ImageIcon size={12} /> : file?.type?.includes('audio') ? <Radio size={12} /> : file?.type?.includes('video') ? <Video size={12} /> : <Eye size={12} />}
-                  {isText ? 'Document Viewer' : isImage ? 'Image Forensics' : file?.type?.includes('audio') ? 'Audio Analysis' : file?.type?.includes('video') ? 'Video Forensics' : 'Asset Viewer'}
-                </span>
-              </div>
-              {isText ? (
-                <div className="relative w-full aspect-video bg-black/60 rounded-2xl overflow-hidden border border-white/10 flex flex-col p-4 gap-3">
-                  <div className="flex items-center gap-2 border-b border-white/10 pb-3"><FileText size={14} className="text-offwhite/40" /><span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest">{file?.name}</span><span className="ml-auto font-mono text-[9px] text-signal uppercase tracking-widest border border-signal/30 px-2 py-0.5 rounded bg-signal/10">Analyzed</span></div>
-                  <div className="flex flex-col gap-2 flex-1 overflow-hidden">{[90, 75, 60, 85, 50, 70, 40, 65].map((w, i) => (<div key={i} className={`h-1.5 rounded-full ${i % 3 === 0 ? 'bg-signal/40' : 'bg-white/10'}`} style={{ width: `${w}%` }} />))}</div>
-                  <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2 bg-signal/10 border border-signal/20 px-3 py-1.5 rounded-lg"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_6px_#e63b2e]" /><span className="font-mono text-[9px] text-signal uppercase tracking-widest">RoBERTa Classifier Active</span></div>
-                </div>
-              ) : isImage ? (
-                <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 group">
-                  <img src={fileUrl} alt="Forensic subject" className="w-full h-full object-cover opacity-70" />
-                  {scanData?.bounding_box && (<div className="absolute border-2 border-signal shadow-[0_0_20px_rgba(230,59,46,0.6)] bg-signal/10" style={{ top: scanData.bounding_box.top, left: scanData.bounding_box.left, width: scanData.bounding_box.width, height: scanData.bounding_box.height }}><div className="absolute -top-6 left-0 bg-signal text-white font-sans text-[10px] px-2 py-0.5 font-bold whitespace-nowrap shadow-lg rounded-t-sm tracking-wider uppercase">AI-GENERATED AREA</div></div>)}
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-[9px] font-mono text-signal flex items-center gap-1.5 z-10 uppercase tracking-widest"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_10px_#e63b2e]" /> SigLIP Analysis Active</div>
-                </div>
-              ) : file?.type?.includes('audio') ? (
-                <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 flex flex-col items-center justify-center gap-4 bg-black/60">
-                  <Radio size={40} className="text-signal animate-pulse" />
-                  <p className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest">{file?.name}</p>
-                  <audio src={fileUrl} controls className="w-3/4 opacity-80" />
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-[9px] font-mono text-signal flex items-center gap-1.5 z-10 uppercase tracking-widest"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_10px_#e63b2e]" /> MFCC Spectral Analysis</div>
-                </div>
-              ) : file?.type?.includes('video') ? (
-                <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10">
-                  <video src={fileUrl} controls autoPlay muted loop className="w-full h-full object-cover" />
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-[9px] font-mono text-signal flex items-center gap-1.5 z-10 uppercase tracking-widest"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_10px_#e63b2e]" /> Frame Sampling Active</div>
-                </div>
-              ) : (
-                <div className="relative w-full aspect-video bg-black/60 rounded-2xl overflow-hidden border border-white/10 flex flex-col items-center justify-center gap-3"><Eye size={40} className="text-offwhite/20" /><p className="font-mono text-xs text-offwhite/40">Asset Analysis Complete</p></div>
-              )}
+  const handleReset = () => {
+    clearInterval(intervalRef.current)
+    setFile(null); setResults(false); setScanData(null)
+    setAnalyzing(false); setProgress(0); setErrorMsg(null); setTextInput('')
+  }
+
+  const fileUrl = useMemo(() => file ? URL.createObjectURL(file) : null, [file])
+  const isText  = inputMode === 'text' || file?.type?.includes('text') || file?.name?.endsWith('.txt')
+  const isImage = file?.type?.includes('image')
+  const isAudio = file?.type?.includes('audio')
+  const isVideo = file?.type?.includes('video')
+
+  // ── Results view ──
+  if (results && scanData) {
+    const score        = scanData.score ?? 0
+    const verdict      = scanData.verdict
+    const classification = scanData.classification || (verdict === 'SYNTHETIC' ? 'Likely synthetic' : 'Likely authentic')
+    const confidence   = scanData.confidence || 'Low'
+    const evidence     = scanData.evidence || []
+
+    // Find frame details for video timeline
+    const frameEvidence = evidence.find(e => e.name === 'Frame-level image analysis')
+    const frameDetails  = frameEvidence?.frame_details || []
+
+    return (
+      <div className="flex flex-col gap-6 animate-in fade-in duration-500">
+        {/* Header bar */}
+        <div className="flex items-center justify-between bg-[#111113] border border-white/[0.08] p-4 rounded-2xl shadow-lg">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+              <CheckCircle size={18} className="text-green-400" />
             </div>
-            <div className="relative bg-gradient-to-b from-[#18181A] to-[#0A0A0C] border border-white/[0.08] rounded-3xl p-8 flex flex-col justify-center items-center overflow-hidden shadow-2xl group hover:border-signal/30 transition-all duration-500">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-signal/20 blur-[60px] rounded-full pointer-events-none group-hover:bg-signal/30 transition-all duration-500" />
-              <span className="font-mono text-[10px] text-offwhite/40 uppercase tracking-widest mb-2 relative z-10">AI Generation Probability</span>
-              <div className="flex items-baseline gap-1 relative z-10"><h2 className="text-7xl font-sans font-black text-signal tracking-tighter drop-shadow-[0_0_15px_rgba(230,59,46,0.3)]">{scanData?.score ?? '—'}</h2><span className="text-3xl font-black text-signal/50">%</span></div>
-              <span className={`text-xs font-bold uppercase tracking-[0.3em] mt-1 relative z-10 ${(scanData?.score ?? 0) > 65 ? 'text-signal' : 'text-green-400'}`}>{(scanData?.score ?? 0) > 65 ? 'AI GENERATED' : 'REAL CONTENT'}</span>
-              <div className="mt-8 flex flex-col gap-3 w-full relative z-10">
-                <div className="bg-black/50 backdrop-blur-md border border-white/10 p-3 rounded-xl flex items-center justify-between"><span className="font-mono text-[9px] text-offwhite/40 uppercase">Scan ID</span><span className="font-mono text-[10px] text-offwhite">{scanData?.scan_id ?? '—'}</span></div>
-                <div className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-mono text-[10px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(230,59,46,0.15)] ${scanData?.verdict === 'SYNTHETIC' ? 'bg-signal/15 text-signal border-signal/30' : 'bg-green-500/15 text-green-400 border-green-500/30'}`}>
-                  {scanData?.verdict === 'SYNTHETIC' ? <><AlertTriangle size={14} /> AI-Generated Content Detected</> : <><CheckCircle size={14} /> Authentic Content Verified</>}
-                </div>
-              </div>
+            <div>
+              <p className="font-mono text-xs font-bold text-offwhite uppercase tracking-wider">Analysis Complete</p>
+              <p className="font-sans text-sm text-offwhite/50">{scanData?.filename}</p>
             </div>
           </div>
-          <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl rounded-3xl p-6 flex flex-col gap-6 shadow-xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3"><span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest flex items-center gap-2"><Layers size={12} /> Multimodal Breakdown</span></div>
-            <div className="grid gap-6">
-              {[
-                { key: 'visual', label: 'Visual', sub: 'SigLIP + ViT deepfake · Face-aware scoring' },
-                { key: 'audio', label: 'Audio', sub: 'MFCC Spectral Variance · Librosa' },
-                { key: 'linguistic', label: 'Linguistic', sub: 'RoBERTa Text Classifier · Hello-SimpleAI' },
-              ].map(row => {
-                const pct = scanData?.breakdown?.[row.key] ?? 0
-                const high = pct >= 65
-                return (
-                  <div key={row.label} className="flex flex-col gap-2">
-                    <div className="flex justify-between items-end">
-                      <div className="flex flex-col"><span className="font-sans text-sm font-bold text-offwhite tracking-wide">{row.label}</span><span className="font-mono text-[10px] text-offwhite/40">{row.sub}</span></div>
-                      <span className={`font-mono text-sm font-bold ${high ? 'text-signal' : 'text-offwhite/60'}`}>{pct}%</span>
-                    </div>
-                    <div className="h-1.5 bg-black/50 border border-white/5 rounded-full overflow-hidden"><div className={`h-full rounded-full relative transition-all duration-700 ${high ? 'bg-signal shadow-[0_0_10px_#e63b2e]' : 'bg-white/20'}`} style={{ width: `${pct}%` }} /></div>
+          <div className="flex items-center gap-8 px-6 border-l border-white/10">
+            <div className="flex flex-col"><span className="font-mono text-[9px] text-offwhite/40 uppercase tracking-widest">Latency</span><span className="font-mono text-xs text-offwhite">{scanData?.latency ?? '—'}</span></div>
+            <div className="flex flex-col"><span className="font-mono text-[9px] text-offwhite/40 uppercase tracking-widest">Scan ID</span><span className="font-mono text-xs text-offwhite">{scanData?.scan_id ?? '—'}</span></div>
+          </div>
+          <button onClick={handleReset} className="ml-4 px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-mono text-xs text-offwhite uppercase tracking-wider transition-all">New Scan</button>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2 flex flex-col gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* File preview */}
+              <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl rounded-3xl p-5 flex flex-col gap-4 shadow-xl hover:shadow-2xl transition-all duration-500 hover:border-white/[0.15]">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest flex items-center gap-2">
+                    {isText ? <FileText size={12} /> : isImage ? <ImageIcon size={12} /> : isAudio ? <Radio size={12} /> : isVideo ? <Video size={12} /> : <Eye size={12} />}
+                    {isText ? 'Text Analysis' : isImage ? 'Image Analysis' : isAudio ? 'Audio Analysis' : isVideo ? 'Video Analysis' : 'Asset Analysis'}
+                  </span>
+                </div>
+                {isText ? (
+                  <div className="relative w-full aspect-video bg-black/60 rounded-2xl overflow-hidden border border-white/10 flex flex-col p-4 gap-3">
+                    <div className="flex items-center gap-2 border-b border-white/10 pb-3"><FileText size={14} className="text-offwhite/40" /><span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest">{scanData?.filename}</span><span className="ml-auto font-mono text-[9px] text-signal uppercase tracking-widest border border-signal/30 px-2 py-0.5 rounded bg-signal/10">Analyzed</span></div>
+                    <div className="flex flex-col gap-2 flex-1 overflow-hidden">{[90, 75, 60, 85, 50, 70, 40, 65].map((w, i) => (<div key={i} className={`h-1.5 rounded-full ${i % 3 === 0 ? 'bg-signal/40' : 'bg-white/10'}`} style={{ width: `${w}%` }} />))}</div>
+                    <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2 bg-signal/10 border border-signal/20 px-3 py-1.5 rounded-lg"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_6px_#e63b2e]" /><span className="font-mono text-[9px] text-signal uppercase tracking-widest">RoBERTa Classifier Active</span></div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-          <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl rounded-3xl p-6 flex flex-col gap-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest flex items-center gap-2"><Waves size={12} /> Forensic Timeline</span>
-              <div className="flex items-center gap-2 bg-signal/10 border border-signal/20 px-2.5 py-1 rounded-md"><div className="w-1.5 h-1.5 bg-signal rounded-full animate-pulse shadow-[0_0_5px_#e63b2e]" /><span className="font-mono text-[9px] text-signal uppercase tracking-widest">Anomaly Found</span></div>
-            </div>
-            {(isText || isImage) ? (
-              <div className="h-32 bg-black/20 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-2 mt-2">
-                <div className="flex items-center gap-2 opacity-30"><Waves size={14} className="text-offwhite" /><span className="font-mono text-[10px] text-offwhite uppercase tracking-widest">Timeline N/A for Static Payloads</span></div>
-                <span className="font-mono text-[9px] text-offwhite/20 uppercase tracking-widest">Applies to video and audio files only</span>
+                ) : isImage ? (
+                  <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 group">
+                    <img src={fileUrl} alt="Analyzed subject" className="w-full h-full object-cover opacity-70" />
+                    {/* No bounding box — localization not implemented */}
+                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-[9px] font-mono text-signal flex items-center gap-1.5 z-10 uppercase tracking-widest"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_10px_#e63b2e]" /> SigLIP Analysis Active</div>
+                  </div>
+                ) : isAudio ? (
+                  <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 flex flex-col items-center justify-center gap-4 bg-black/60">
+                    <Radio size={40} className="text-signal animate-pulse" />
+                    <p className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest">{scanData?.filename}</p>
+                    <audio src={fileUrl} controls className="w-3/4 opacity-80" />
+                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-[9px] font-mono text-signal flex items-center gap-1.5 z-10 uppercase tracking-widest"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_10px_#e63b2e]" /> MFCC Signal Analysis</div>
+                  </div>
+                ) : isVideo ? (
+                  <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10">
+                    <video src={fileUrl} controls autoPlay muted loop className="w-full h-full object-cover" />
+                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-[9px] font-mono text-signal flex items-center gap-1.5 z-10 uppercase tracking-widest"><div className="w-1.5 h-1.5 rounded-full bg-signal animate-pulse shadow-[0_0_10px_#e63b2e]" /> Frame Sampling Active</div>
+                  </div>
+                ) : (
+                  <div className="relative w-full aspect-video bg-black/60 rounded-2xl overflow-hidden border border-white/10 flex flex-col items-center justify-center gap-3"><Eye size={40} className="text-offwhite/20" /><p className="font-mono text-xs text-offwhite/40">Analysis Complete</p></div>
+                )}
               </div>
-            ) : (
-              <div className="relative h-32 bg-black/30 rounded-xl border border-white/5 p-3 flex items-end overflow-hidden mt-2">
-                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                <div className="absolute inset-x-3 bottom-6 top-3">
-                  <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <path className="stroke-white/20" d="M0,85 L15,85 L20,88 L30,85 L40,86 L50,85 L60,83 L70,85 L80,85 L90,87 L100,85" fill="none" strokeWidth="1.5" />
-                    <path fill="none" stroke="#E63B2E" strokeWidth="2.5" className="drop-shadow-[0_0_5px_rgba(230,59,46,0.8)]" d="M0,80 L15,80 L18,75 L20,80 L22,78 L25,80 L28,20 L30,10 L32,30 L35,5 L38,40 L40,80 L45,78 L50,80 L60,80 L70,75 L80,80 L90,78 L100,80" />
-                  </svg>
+
+              {/* Score card */}
+              <div className="relative bg-gradient-to-b from-[#18181A] to-[#0A0A0C] border border-white/[0.08] rounded-3xl p-8 flex flex-col justify-center items-center overflow-hidden shadow-2xl group hover:border-signal/30 transition-all duration-500">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-signal/20 blur-[60px] rounded-full pointer-events-none group-hover:bg-signal/30 transition-all duration-500" />
+                <span className="font-mono text-[10px] text-offwhite/40 uppercase tracking-widest mb-2 relative z-10">AI Generation Probability</span>
+                <div className="flex items-baseline gap-1 relative z-10">
+                  <h2 className="text-7xl font-sans font-black text-signal tracking-tighter drop-shadow-[0_0_15px_rgba(230,59,46,0.3)]">{score}</h2>
+                  <span className="text-3xl font-black text-signal/50">%</span>
                 </div>
-                {(scanData?.timeline_spikes?.length ?? 0) > 0 && (<div className="absolute left-[17%] right-[72%] top-0 bottom-6 bg-signal/10 border-x border-signal/40 flex items-start justify-center pt-2"><div className="bg-signal/90 text-black font-mono text-[9px] px-2 py-0.5 rounded shadow-[0_0_10px_rgba(230,59,46,0.4)] whitespace-nowrap font-bold tracking-widest">{scanData.timeline_spikes.slice(0, 2).join(' – ')} HIGH</div></div>)}
-                <div className="w-full flex justify-between font-mono text-[9px] text-offwhite/40 border-t border-white/10 pt-2 z-10">
-                  {['0:00', ...(scanData?.timeline_spikes?.slice(0, 2) ?? ['0:14', '0:22']), '1:00', '1:20'].map((t, i) => (<span key={`${t}-${i}`} className={i === 1 || i === 2 ? 'text-signal font-bold' : ''}>{t}</span>))}
+                {/* Use accurate terminology */}
+                <span className={`text-xs font-bold uppercase tracking-[0.3em] mt-1 relative z-10 ${score > 65 ? 'text-signal' : 'text-green-400'}`}>
+                  {classification}
+                </span>
+                <div className="mt-8 flex flex-col gap-3 w-full relative z-10">
+                  <div className="bg-black/50 backdrop-blur-md border border-white/10 p-3 rounded-xl flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-offwhite/40 uppercase">Model Confidence</span>
+                    <span className="font-mono text-[10px] text-offwhite font-bold">{confidence}</span>
+                  </div>
+                  <div className="bg-black/50 backdrop-blur-md border border-white/10 p-3 rounded-xl flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-offwhite/40 uppercase">Scan ID</span>
+                    <span className="font-mono text-[10px] text-offwhite">{scanData?.scan_id ?? '—'}</span>
+                  </div>
+                  <div className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-mono text-[10px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(230,59,46,0.15)] ${verdict === 'SYNTHETIC' ? 'bg-signal/15 text-signal border-signal/30' : 'bg-green-500/15 text-green-400 border-green-500/30'}`}>
+                    {verdict === 'SYNTHETIC' ? <><AlertTriangle size={14} /> {classification}</> : <><CheckCircle size={14} /> {classification}</>}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Video frame timeline — actual timestamps */}
+            {(isVideo || scanData?.modality === 'media') && (
+              <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl rounded-3xl p-6 flex flex-col gap-4 shadow-xl">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest flex items-center gap-2"><Waves size={12} /> Frame-Level Analysis</span>
+                </div>
+                {frameDetails.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    <p className="font-mono text-[9px] text-offwhite/30 uppercase tracking-widest mb-1">Analyzed frames (actual timestamps from video)</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {frameDetails.map((f, i) => (
+                        <div key={i} className={`flex flex-col items-center p-3 rounded-xl border ${f.score_pct > 65 ? 'bg-signal/10 border-signal/30' : 'bg-white/[0.02] border-white/10'}`}>
+                          <span className="font-mono text-[10px] text-offwhite/50 uppercase">Frame {i + 1}</span>
+                          <span className="font-mono text-xs text-offwhite font-bold mt-1">{f.timestamp}</span>
+                          <span className={`font-mono text-sm font-bold mt-1 ${f.score_pct > 65 ? 'text-signal' : 'text-green-400'}`}>{f.score_pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-24 bg-black/20 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-2">
+                    <Waves size={14} className="text-offwhite/20" />
+                    <span className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest">No frames analyzed</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Image localization notice */}
+            {isImage && (
+              <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl rounded-3xl p-4 flex items-center gap-3">
+                <Info size={14} className="text-offwhite/30 flex-shrink-0" />
+                <div>
+                  <span className="font-mono text-[10px] text-offwhite/40 uppercase tracking-widest block">Manipulation Localization</span>
+                  <span className="font-sans text-xs text-offwhite/30 mt-0.5 block">Not available — pixel-level manipulation localization is not implemented in this version.</span>
+                </div>
+              </div>
+            )}
+
+            {/* Audio notice */}
+            {isAudio && (
+              <div className="bg-signal/5 border border-signal/20 rounded-3xl p-4 flex items-start gap-3">
+                <AlertTriangle size={14} className="text-signal flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-mono text-[10px] text-signal uppercase tracking-widest block">Audio Detection Limitation</span>
+                  <span className="font-sans text-xs text-offwhite/50 mt-1 block">
+                    Audio analysis uses MFCC signal features only. No trained audio deepfake model is integrated.
+                    The score shown (50%) reflects uncertainty — not a reliable AI/real determination.
+                    Audio deepfake detection is marked as unavailable.
+                  </span>
                 </div>
               </div>
             )}
           </div>
-        </div>
-        <div className="flex flex-col bg-[#050505] border border-white/10 rounded-3xl overflow-hidden shadow-2xl h-full min-h-[500px]">
-          <div className="bg-white/5 border-b border-white/10 p-4 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-3"><Terminal size={14} className="text-offwhite/50" /><p className="font-mono text-xs text-offwhite uppercase tracking-widest">Live Terminal</p></div>
-            <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-green-500 rounded-full" /><span className="font-mono text-[9px] text-green-500 uppercase tracking-widest">Engine_v10</span></div>
-          </div>
-          <div className="p-5 flex-1 overflow-y-auto font-mono text-[11px] leading-relaxed flex flex-col gap-2">
-            <div className="text-offwhite/40">&gt; INITIATING MULTIMODAL SCAN...</div>
-            <div className="text-offwhite/40">&gt; Payload received: {scanData?.filename}</div>
-            <div className="text-offwhite/40">&gt; Loading PyTorch models from cache... OK</div>
-            <div className="text-offwhite/40">&gt; Running face detection (OpenCV)... OK</div>
-            <div className="text-offwhite/40">&gt; Running MFCC audio analysis...</div>
-            <div className="text-offwhite">&gt; Checking EXIF metadata...</div>
-            {(scanData?.anomalies ?? []).map(a => (<div key={a.id} className={`${a.severity === 'CRITICAL' || a.severity === 'HIGH' ? 'text-signal font-bold bg-signal/10 border-l-2 border-signal pl-3 py-1 rounded-r-md' : 'text-offwhite/70'}`}>&gt; {a.severity}: {a.label}</div>))}
-            <div className="text-offwhite/40 mt-1">&gt; Synthetic probability: {scanData ? 100 - (scanData.score ?? 0) : '—'}%</div>
-            <div className={`font-bold mt-1 ${scanData?.verdict === 'SYNTHETIC' ? 'text-signal' : 'text-green-400'}`}>&gt; VERDICT: {scanData?.verdict} (Score: {scanData?.score}%)</div>
-            <div className="text-offwhite animate-pulse mt-2">_</div>
+
+          {/* Evidence + Terminal panel */}
+          <div className="flex flex-col gap-6 h-full">
+            {/* Evidence list */}
+            <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl rounded-3xl p-6 flex flex-col gap-3 shadow-xl">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest flex items-center gap-2"><Layers size={12} /> Evidence</span>
+                <span className="font-mono text-[9px] text-offwhite/30 uppercase tracking-widest">From actual computations</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                {evidence.map((item, i) => <EvidenceItem key={i} item={item} />)}
+              </div>
+            </div>
+
+            {/* Limitations section */}
+            <LimitationsSection limitations={scanData?.limitations} />
+
+            {/* Terminal */}
+            <div className="flex flex-col bg-[#050505] border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex-1 min-h-[250px]">
+              <div className="bg-white/5 border-b border-white/10 p-4 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-3"><Terminal size={14} className="text-offwhite/50" /><p className="font-mono text-xs text-offwhite uppercase tracking-widest">Analysis Log</p></div>
+                <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-green-500 rounded-full" /><span className="font-mono text-[9px] text-green-500 uppercase tracking-widest">Engine_v11</span></div>
+              </div>
+              <div className="p-5 flex-1 overflow-y-auto font-mono text-[11px] leading-relaxed flex flex-col gap-2">
+                <div className="text-offwhite/40">&gt; INITIATING MULTIMODAL SCAN...</div>
+                <div className="text-offwhite/40">&gt; Payload: {scanData?.filename}</div>
+                <div className="text-offwhite/40">&gt; Modality: {scanData?.modality}</div>
+                <div className="text-offwhite/40">&gt; Model: {scanData?.model}</div>
+                {evidence.filter(e => e.status === 'analyzed').map((e, i) => (
+                  <div key={i} className="text-green-400">&gt; {e.name}: {e.score !== undefined ? `${e.score}%` : e.classification || 'analyzed'}</div>
+                ))}
+                {evidence.filter(e => e.status === 'unavailable' || e.status === 'not_available').map((e, i) => (
+                  <div key={i} className="text-offwhite/30">&gt; {e.name}: {e.status.replace(/_/g, ' ')}</div>
+                ))}
+                <div className="text-offwhite/40 mt-1">&gt; Processing time: {scanData?.latency}</div>
+                <div className={`font-bold mt-1 ${verdict === 'SYNTHETIC' ? 'text-signal' : 'text-green-400'}`}>
+                  &gt; RESULT: {classification} ({score}%) — Confidence: {confidence}
+                </div>
+                <div className="text-offwhite animate-pulse mt-2">_</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
+  // ── Upload view ──
   return (
     <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto w-full gap-8 animate-in fade-in duration-500">
       {!analyzing ? (
         <>
           <div className="text-center space-y-2">
             <h2 className="text-3xl font-sans font-black uppercase tracking-tight text-offwhite">Analyze Content</h2>
-            <p className="font-mono text-xs text-offwhite/40">Upload a file to run local AI detection — no data leaves your machine.</p>
+            <p className="font-mono text-xs text-offwhite/40">
+              {IS_LOCAL ? 'Local backend detected — files processed on your machine.' : `API endpoint: ${API_URL}`}
+            </p>
           </div>
-          <div onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop} onClick={() => !file && fileRef.current?.click()} className={`relative overflow-hidden w-full border-2 border-dashed rounded-[2rem] min-h-[360px] flex flex-col items-center justify-center gap-6 cursor-pointer transition-all duration-500 ${isDragging ? 'border-signal bg-signal/5 scale-[1.02]' : file ? 'border-white/20 bg-white/5 cursor-default' : 'border-white/10 bg-[#09090B] hover:border-white/20 hover:bg-white/[0.02]'}`}>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none" />
-            <input ref={fileRef} type="file" className="hidden" accept="image/*,video/*,audio/*,.txt,.pdf" onChange={e => setFile(e.target.files[0])} />
-            {file ? (
-              <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-300">
-                <div className="w-20 h-20 bg-white/10 border border-white/20 rounded-full flex items-center justify-center mb-6 shadow-xl"><CheckCircle size={32} className="text-green-400" /></div>
-                <p className="font-sans font-bold text-offwhite text-xl">{file.name}</p>
-                <p className="font-mono text-xs text-offwhite/40 mt-2 bg-black/50 px-3 py-1 rounded-full border border-white/10">{(file.size / 1024).toFixed(1)} KB</p>
-                <button onClick={(e) => { e.stopPropagation(); setFile(null) }} className="mt-6 font-mono text-[10px] text-signal/60 hover:text-signal uppercase tracking-widest transition-colors border border-transparent hover:border-signal/30 px-4 py-2 rounded-full">Remove File</button>
-              </div>
-            ) : (
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <div className="flex gap-6 text-offwhite/20 mb-8"><ImageIcon size={32} /><Video size={32} /><Mic size={32} /><FileText size={32} /></div>
-                <p className="font-sans font-bold text-offwhite/80 text-lg tracking-wide">Drag & Drop your file here</p>
-                <p className="font-mono text-[10px] text-offwhite/30 mt-3 uppercase tracking-widest border border-white/10 px-4 py-1.5 rounded-full bg-black/50">Image · Video · Audio · Text</p>
-              </div>
-            )}
+
+          {/* Mode toggle */}
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl p-1 w-full max-w-xs">
+            <button onClick={() => { setInputMode('file'); setErrorMsg(null) }} className={`flex-1 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition-all ${inputMode === 'file' ? 'bg-signal text-offwhite' : 'text-offwhite/40 hover:text-offwhite'}`}>File Upload</button>
+            <button onClick={() => { setInputMode('text'); setErrorMsg(null) }} className={`flex-1 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition-all ${inputMode === 'text' ? 'bg-signal text-offwhite' : 'text-offwhite/40 hover:text-offwhite'}`}>Paste Text</button>
           </div>
-          <button onClick={handleAnalyze} disabled={!file} className={`w-full max-w-md flex items-center justify-center gap-3 py-4 rounded-2xl font-mono text-xs font-bold uppercase tracking-widest transition-all duration-500 shadow-xl ${file ? 'bg-signal text-ink hover:bg-signal/90 hover:-translate-y-1 cursor-pointer' : 'bg-white/5 border border-white/10 text-offwhite/20 cursor-not-allowed'}`}>
-            <ScanLine size={16} /> {file ? 'Run Detection' : 'Awaiting File'}
+
+          {/* Error message */}
+          {errorMsg && (
+            <div className="w-full flex items-start gap-3 bg-signal/10 border border-signal/30 rounded-2xl p-4">
+              <AlertTriangle size={16} className="text-signal flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-mono text-xs font-bold text-signal uppercase tracking-wider mb-1">Analysis Failed</p>
+                <p className="font-sans text-sm text-offwhite/60 leading-relaxed">{errorMsg}</p>
+              </div>
+            </div>
+          )}
+
+          {inputMode === 'file' ? (
+            <div onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop} onClick={() => !file && fileRef.current?.click()} className={`relative overflow-hidden w-full border-2 border-dashed rounded-[2rem] min-h-[360px] flex flex-col items-center justify-center gap-6 cursor-pointer transition-all duration-500 ${isDragging ? 'border-signal bg-signal/5 scale-[1.02]' : file ? 'border-white/20 bg-white/5 cursor-default' : 'border-white/10 bg-[#09090B] hover:border-white/20 hover:bg-white/[0.02]'}`}>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none" />
+              <input ref={fileRef} type="file" className="hidden" accept="image/*,video/*,audio/*,.txt" onChange={e => { setFile(e.target.files[0]); setErrorMsg(null) }} />
+              {file ? (
+                <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-300">
+                  <div className="w-20 h-20 bg-white/10 border border-white/20 rounded-full flex items-center justify-center mb-6 shadow-xl"><CheckCircle size={32} className="text-green-400" /></div>
+                  <p className="font-sans font-bold text-offwhite text-xl">{file.name}</p>
+                  <p className="font-mono text-xs text-offwhite/40 mt-2 bg-black/50 px-3 py-1 rounded-full border border-white/10">{(file.size / 1024).toFixed(1)} KB</p>
+                  <button onClick={(e) => { e.stopPropagation(); setFile(null); setErrorMsg(null) }} className="mt-6 font-mono text-[10px] text-signal/60 hover:text-signal uppercase tracking-widest transition-colors border border-transparent hover:border-signal/30 px-4 py-2 rounded-full">Remove File</button>
+                </div>
+              ) : (
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="flex gap-6 text-offwhite/20 mb-8"><ImageIcon size={32} /><Video size={32} /><Mic size={32} /><FileText size={32} /></div>
+                  <p className="font-sans font-bold text-offwhite/80 text-lg tracking-wide">Drag & Drop your file here</p>
+                  <p className="font-mono text-[10px] text-offwhite/30 mt-3 uppercase tracking-widest border border-white/10 px-4 py-1.5 rounded-full bg-black/50">Image · Video · Audio · Text</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="w-full">
+              <textarea
+                value={textInput}
+                onChange={e => { setTextInput(e.target.value); setErrorMsg(null) }}
+                placeholder="Paste text here to analyze for AI generation (minimum 10 characters)..."
+                rows={10}
+                className="w-full bg-[#09090B] border border-white/10 rounded-2xl p-5 font-mono text-sm text-offwhite placeholder:text-offwhite/20 outline-none focus:border-signal/50 resize-none transition-colors leading-relaxed"
+              />
+              <p className="font-mono text-[10px] text-offwhite/30 uppercase tracking-widest mt-2 text-right">{textInput.length} characters</p>
+            </div>
+          )}
+
+          <button
+            onClick={handleAnalyze}
+            disabled={inputMode === 'file' ? !file : !textInput.trim()}
+            className={`w-full max-w-md flex items-center justify-center gap-3 py-4 rounded-2xl font-mono text-xs font-bold uppercase tracking-widest transition-all duration-500 shadow-xl ${(inputMode === 'file' ? file : textInput.trim()) ? 'bg-signal text-ink hover:bg-signal/90 hover:-translate-y-1 cursor-pointer' : 'bg-white/5 border border-white/10 text-offwhite/20 cursor-not-allowed'}`}
+          >
+            <ScanLine size={16} /> {(inputMode === 'file' ? file : textInput.trim()) ? 'Run Detection' : 'Awaiting Input'}
           </button>
         </>
       ) : (
         <div className="w-full max-w-md bg-[#111113] border border-white/10 rounded-[2rem] p-12 flex flex-col items-center gap-8 shadow-2xl animate-in zoom-in-95 duration-500">
           <div className="relative flex items-center justify-center"><div className="absolute inset-0 bg-signal/20 blur-[40px] rounded-full animate-pulse" /><ScanLine size={48} className="text-signal relative z-10 animate-bounce" /></div>
           <div className="text-center space-y-2 w-full">
-            <p className="font-mono text-sm text-offwhite font-bold uppercase tracking-widest">Running Local Detection</p>
+            <p className="font-mono text-sm text-offwhite font-bold uppercase tracking-widest">Running Analysis</p>
             <p className="font-mono text-[10px] text-offwhite/40 uppercase tracking-widest">PyTorch models processing...</p>
             <div className="w-full h-2 bg-black border border-white/10 rounded-full overflow-hidden mt-6"><div className="h-full bg-signal rounded-full shadow-[0_0_10px_#e63b2e] transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} /></div>
             <p className="font-mono text-[10px] text-signal uppercase tracking-widest mt-3">{Math.round(progress)}%</p>
@@ -747,6 +1080,10 @@ function ArchivePanel() {
   const filtered = ARCHIVE_ROWS.filter(r => r.id.toLowerCase().includes(search.toLowerCase()) || r.modality.toLowerCase().includes(search.toLowerCase()) || r.verdict.toLowerCase().includes(search.toLowerCase()))
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 h-full">
+      <div className="flex items-center gap-2 bg-signal/10 border border-signal/20 rounded-xl p-3">
+        <Info size={13} className="text-signal flex-shrink-0" />
+        <p className="font-mono text-[10px] text-offwhite/50 uppercase tracking-widest">Demo data — sample scan results for illustration only. Run actual scans in the Scanner Engine.</p>
+      </div>
       <div className="flex flex-col gap-6 bg-[#09090B] border border-white/[0.08] p-6 rounded-3xl shadow-xl">
         <div className="w-full border-b border-white/10 pb-4 relative flex items-center gap-4"><Eye size={20} className="text-offwhite/40" /><input value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-transparent border-none text-offwhite focus:outline-none font-mono text-sm placeholder:text-offwhite/30 tracking-wide" placeholder="Search by ID, modality, or verdict..." /></div>
         <div className="flex gap-3 flex-wrap">{['Modality: All', 'Verdict: Synthetic', 'Date: Last 7 Days'].map(f => (<button key={f} className="flex items-center gap-2 border border-white/10 bg-white/[0.02] hover:bg-white/[0.08] text-offwhite/70 hover:text-offwhite px-4 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition-all">{f} <ChevronRight size={12} /></button>))}</div>
@@ -754,13 +1091,13 @@ function ArchivePanel() {
       <div className="flex-1 overflow-hidden flex flex-col rounded-3xl border border-white/[0.08] bg-[#09090B] shadow-xl">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse">
-            <thead><tr className="bg-white/[0.02] border-b border-white/10">{['Scan ID', 'Modality', 'Verdict', 'Score', 'Primary Anomaly', 'Action'].map(h => <th key={h} className="px-6 py-5 font-mono text-[10px] font-bold text-offwhite/40 uppercase tracking-widest whitespace-nowrap">{h}</th>)}</tr></thead>
+            <thead><tr className="bg-white/[0.02] border-b border-white/10">{['Scan ID', 'Modality', 'Verdict', 'Score', 'Primary Evidence', 'Action'].map(h => <th key={h} className="px-6 py-5 font-mono text-[10px] font-bold text-offwhite/40 uppercase tracking-widest whitespace-nowrap">{h}</th>)}</tr></thead>
             <tbody className="divide-y divide-white/5 font-mono text-xs">
               {filtered.map(row => (
                 <tr key={row.id} className="hover:bg-white/[0.03] transition-colors group cursor-pointer">
                   <td className="px-6 py-5 text-offwhite/80 font-medium group-hover:text-offwhite transition-colors">{row.id}</td>
                   <td className="px-6 py-5 text-offwhite/50">{row.modality}</td>
-                  <td className="px-6 py-5"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[9px] font-bold tracking-widest uppercase border ${row.verdict === 'SYNTHETIC' ? 'bg-signal/10 text-signal border-signal/20' : 'bg-white/5 text-offwhite/60 border-white/10'}`}>{row.verdict}</span></td>
+                  <td className="px-6 py-5"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[9px] font-bold tracking-widest uppercase border ${row.verdict === 'SYNTHETIC' ? 'bg-signal/10 text-signal border-signal/20' : row.verdict === 'UNCERTAIN' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-white/5 text-offwhite/60 border-white/10'}`}>{row.verdict === 'SYNTHETIC' ? 'Likely Synthetic' : row.verdict === 'UNCERTAIN' ? 'Uncertain' : 'Likely Authentic'}</span></td>
                   <td className={`px-6 py-5 font-bold ${row.verdict === 'SYNTHETIC' ? 'text-signal' : 'text-offwhite/60'}`}>{row.conf}%</td>
                   <td className="px-6 py-5 text-offwhite/60 max-w-sm truncate group-hover:text-offwhite/90 transition-colors">{row.anomaly}</td>
                   <td className="px-6 py-5"><button className="font-mono text-[10px] uppercase tracking-widest text-offwhite/30 group-hover:text-signal transition-colors flex items-center gap-1">View <ArrowRight size={10} /></button></td>
@@ -779,55 +1116,45 @@ function ArchivePanel() {
 }
 
 function SubscriptionPanel() {
-  const metrics = [
-    { label: 'Image Scans', used: 842, total: 1000, danger: false },
-    { label: 'Video / Audio Scans', used: 410, total: 500, danger: false },
-    { label: 'Text Analyses', used: 4900, total: 5000, danger: true },
-  ]
   return (
     <div className="flex flex-col gap-8 max-w-[1000px] mx-auto animate-in fade-in duration-500">
+      <div className="flex items-start gap-3 bg-signal/10 border border-signal/20 rounded-2xl p-4">
+        <Info size={14} className="text-signal flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="font-mono text-[10px] font-bold text-signal uppercase tracking-widest mb-1">Open Source Project</p>
+          <p className="font-sans text-sm text-offwhite/60 leading-relaxed">
+            Veritas Neural is currently an open-source research project. Professional and Enterprise tiers are planned but not yet available.
+            The API runs on your local machine — start with <code className="text-signal bg-signal/10 px-1 rounded">uvicorn main:app --reload --port 8000</code>.
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="relative flex flex-col bg-gradient-to-br from-[#1A1A1D] to-[#0A0A0C] border border-white/[0.08] p-8 rounded-3xl overflow-hidden shadow-2xl group hover:border-signal/30 transition-all duration-500">
           <div className="absolute top-0 right-0 w-48 h-48 bg-signal/10 blur-[60px] rounded-full -mr-10 -mt-10 group-hover:bg-signal/20 transition-all duration-500" />
-          <div className="flex items-center gap-2 mb-6"><Star size={14} className="text-signal" /><p className="text-signal text-[10px] font-mono uppercase font-bold tracking-widest">Active Plan</p></div>
-          <p className="text-offwhite text-2xl font-sans font-black uppercase tracking-tight mb-2 relative z-10">Professional</p>
-          <p className="text-offwhite text-5xl font-sans font-black mb-8 tracking-tighter relative z-10">$49<span className="text-lg text-offwhite/40 font-mono tracking-widest ml-1">/mo</span></p>
-          <div className="mt-auto relative z-10"><button className="flex items-center justify-between w-full p-4 bg-white/5 hover:bg-signal/10 border border-white/10 hover:border-signal/30 rounded-2xl text-offwhite hover:text-signal text-xs font-bold uppercase font-mono tracking-widest transition-all duration-300"><span>Upgrade to Enterprise</span><ArrowRight size={14} /></button></div>
+          <div className="flex items-center gap-2 mb-6"><Star size={14} className="text-signal" /><p className="text-signal text-[10px] font-mono uppercase font-bold tracking-widest">Current Plan</p></div>
+          <p className="text-offwhite text-2xl font-sans font-black uppercase tracking-tight mb-2 relative z-10">Open Source</p>
+          <p className="text-offwhite text-5xl font-sans font-black mb-8 tracking-tighter relative z-10">Free<span className="text-lg text-offwhite/40 font-mono tracking-widest ml-1">/ forever</span></p>
+          <div className="mt-auto relative z-10">
+            <a href="https://github.com/1SoulHunter1/veritas-neural-core" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between w-full p-4 bg-white/5 hover:bg-signal/10 border border-white/10 hover:border-signal/30 rounded-2xl text-offwhite hover:text-signal text-xs font-bold uppercase font-mono tracking-widest transition-all duration-300">
+              <span>View on GitHub</span><ArrowRight size={14} />
+            </a>
+          </div>
         </div>
         <div className="flex flex-col bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl p-8 rounded-3xl shadow-xl">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3"><div className="p-2 bg-white/5 rounded-lg border border-white/10"><Key size={16} className="text-offwhite" /></div><p className="text-offwhite text-sm font-bold uppercase tracking-widest font-mono">API Keys</p></div>
-            <button className="text-offwhite/40 hover:text-signal transition-colors flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest"><ScanLine size={12} /> Regenerate</button>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3"><div className="p-2 bg-white/5 rounded-lg border border-white/10"><Key size={16} className="text-offwhite" /></div><p className="text-offwhite text-sm font-bold uppercase tracking-widest font-mono">API Configuration</p></div>
           </div>
-          <div className="bg-[#050505] border border-white/10 p-4 rounded-xl flex items-center justify-between mb-6 group cursor-pointer hover:border-signal/30 transition-all shadow-inner"><p className="text-signal font-mono text-sm tracking-widest">sk-vn-...****</p><div className="text-offwhite/30 group-hover:text-signal transition-colors"><CheckCircle size={14} /></div></div>
-          <div className="mt-auto flex items-start gap-3 bg-signal/5 border border-signal/10 p-4 rounded-xl"><AlertTriangle size={14} className="text-signal flex-shrink-0" /><p className="text-offwhite/60 font-mono text-[10px] leading-relaxed uppercase tracking-widest">API runs on <span className="text-offwhite font-bold">localhost:8000</span>. Start with <span className="text-offwhite font-bold">python main.py</span>.</p></div>
-        </div>
-      </div>
-      <div className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-xl p-8 rounded-3xl shadow-xl">
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10"><h2 className="text-offwhite text-sm font-bold uppercase tracking-widest font-mono flex items-center gap-3"><BarChart2 size={16} className="text-signal" /> Usage This Month</h2><span className="font-mono text-[9px] text-offwhite/40 border border-white/10 px-2 py-1 rounded tracking-widest uppercase">March 2026</span></div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="flex flex-col gap-8 justify-center">
-            {metrics.map(m => {
-              const p = Math.round((m.used / m.total) * 100)
-              return (
-                <div key={m.label} className="flex flex-col gap-2.5">
-                  <div className="flex justify-between items-end"><p className={`text-xs font-bold uppercase tracking-widest font-mono flex items-center gap-2 ${m.danger ? 'text-signal' : 'text-offwhite'}`}>{m.danger && <AlertTriangle size={12} />} {m.label}</p><p className="text-offwhite/50 font-mono text-[10px] tracking-widest"><span className="text-offwhite font-bold">{m.used.toLocaleString()}</span> / {m.total.toLocaleString()}</p></div>
-                  <div className="h-1.5 w-full bg-black/80 border border-white/5 rounded-full overflow-hidden"><div className={`h-full rounded-full ${m.danger ? 'bg-signal shadow-[0_0_10px_#e63b2e]' : 'bg-white/40'}`} style={{ width: `${p}%` }} /></div>
-                </div>
-              )
-            })}
+          <div className="bg-[#050505] border border-white/10 p-4 rounded-xl flex items-center justify-between mb-4">
+            <p className="text-signal font-mono text-sm tracking-widest">VITE_API_URL</p>
           </div>
-          <div className="border border-white/5 bg-[#050505] rounded-2xl p-5 flex flex-col relative min-h-[200px] shadow-inner">
-            <p className="text-offwhite/30 font-mono text-[9px] absolute top-5 left-5 tracking-widest uppercase">Scans / 30 Days</p>
-            <div className="flex-1 w-full mt-6 relative">
-              <svg viewBox="0 0 300 100" className="w-full h-full absolute inset-0" preserveAspectRatio="none">
-                <defs><linearGradient id="chartGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#E63B2E" stopOpacity="0.3" /><stop offset="100%" stopColor="#E63B2E" stopOpacity="0" /></linearGradient></defs>
-                <path d="M0,80 Q30,75 50,70 T90,60 T130,50 T170,55 T210,30 T250,45 T290,20 L300,20 L300,100 L0,100 Z" fill="url(#chartGrad)" />
-                <path d="M0,80 Q30,75 50,70 T90,60 T130,50 T170,55 T210,30 T250,45 T290,20 L300,20" fill="none" stroke="#E63B2E" strokeWidth="2.5" className="drop-shadow-[0_0_5px_rgba(230,59,46,0.6)]" />
-                <circle cx="50" cy="70" r="3" fill="#E63B2E" /><circle cx="210" cy="30" r="3" fill="#E63B2E" /><circle cx="290" cy="20" r="4" fill="#fff" />
-              </svg>
-            </div>
-            <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-2.5 py-1 rounded-md"><div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_5px_#4ade80]" /><span className="font-mono text-[9px] text-offwhite tracking-widest font-bold">LIVE</span></div>
+          <div className="bg-[#050505] border border-white/10 p-4 rounded-xl font-mono text-xs text-offwhite/60 mb-4">{API_URL}</div>
+          <div className="mt-auto flex items-start gap-3 bg-signal/5 border border-signal/10 p-4 rounded-xl">
+            <AlertTriangle size={14} className="text-signal flex-shrink-0" />
+            <p className="text-offwhite/60 font-mono text-[10px] leading-relaxed uppercase tracking-widest">
+              Set <span className="text-offwhite font-bold">VITE_API_URL</span> in <span className="text-offwhite font-bold">frontend/.env</span> to configure the backend endpoint.
+              {IS_LOCAL ? ' Local mode active.' : ' Cloud/remote mode active.'}
+            </p>
           </div>
         </div>
       </div>
@@ -840,9 +1167,9 @@ function DashboardView({ onNavigate }) {
   const navItems = [
     { id: 'scanner', label: 'Scanner Engine', icon: <ScanLine size={16} /> },
     { id: 'archive', label: 'Scan History', icon: <FolderOpen size={16} /> },
-    { id: 'subscription', label: 'Billing & APIs', icon: <CreditCard size={16} /> },
+    { id: 'subscription', label: 'Settings & API', icon: <CreditCard size={16} /> },
   ]
-  const panelTitles = { scanner: 'Scanner Engine', archive: 'Scan History', subscription: 'Billing & APIs' }
+  const panelTitles = { scanner: 'Scanner Engine', archive: 'Scan History', subscription: 'Settings & API' }
   return (
     <div className="h-[100dvh] bg-[#050505] text-offwhite flex overflow-hidden selection:bg-signal/30">
       <aside className="w-64 flex-shrink-0 border-r border-white/[0.08] bg-[#0A0A0A] flex flex-col p-5 relative z-20">
@@ -854,7 +1181,7 @@ function DashboardView({ onNavigate }) {
           <p className="font-mono text-[9px] text-offwhite/30 uppercase tracking-widest px-2 mb-2">Platform</p>
           {navItems.map(it => (<button key={it.id} onClick={() => setActivePanel(it.id)} className={`group flex items-center gap-3 px-3 py-3 rounded-xl font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-300 text-left w-full ${activePanel === it.id ? 'bg-white/10 text-white shadow-inner' : 'text-offwhite/40 hover:text-offwhite hover:bg-white/[0.03]'}`}><div className={`${activePanel === it.id ? 'text-signal' : 'text-offwhite/30 group-hover:text-offwhite/70 transition-colors'}`}>{it.icon}</div>{it.label}</button>))}
         </nav>
-        <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl mb-4"><p className="font-mono text-[9px] text-offwhite/30 uppercase tracking-widest mb-1">Session</p><div className="flex items-center gap-2"><Shield size={12} className="text-signal" /><span className="font-mono text-xs text-offwhite font-bold">Analyst Access</span></div></div>
+        <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl mb-4"><p className="font-mono text-[9px] text-offwhite/30 uppercase tracking-widest mb-1">Mode</p><div className="flex items-center gap-2"><Shield size={12} className="text-signal" /><span className="font-mono text-xs text-offwhite font-bold">{IS_LOCAL ? 'Local' : 'Remote'}</span></div></div>
         <button onClick={() => onNavigate('landing')} className="flex items-center gap-2 px-3 py-3 rounded-xl font-mono text-[10px] font-bold uppercase tracking-widest text-offwhite/30 hover:text-signal hover:bg-signal/10 transition-colors w-full"><LogOut size={14} /> Sign Out</button>
       </aside>
       <main className="flex-1 overflow-y-auto relative bg-[#050505]">
