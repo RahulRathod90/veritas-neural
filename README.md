@@ -2,12 +2,20 @@
 
 ### *Multimodal AI Forensics & Deepfake Detection Engine*
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-veritas--neural.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://veritas-neural.vercel.app)
+
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688?logo=fastapi)](https://fastapi.tiangolo.com)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?logo=pytorch)](https://pytorch.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite)](https://vitejs.dev)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+---
+
+## 🌐 Live Application
+
+🚀 **Experience Veritas Neural Live:** [**https://veritas-neural.vercel.app**](https://veritas-neural.vercel.app)
 
 ---
 
@@ -123,8 +131,8 @@ majorproject/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/RahulRathod90/veritas-neural-core.git
-cd majorproject
+git clone https://github.com/1SoulHunter1/veritas-neural.git
+cd veritas-neural
 ```
 
 ### 2. Backend Setup
