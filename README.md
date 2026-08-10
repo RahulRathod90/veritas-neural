@@ -131,7 +131,7 @@ majorproject/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/1SoulHunter1/veritas-neural.git
+git clone https://github.com/RahulRathod90/veritas-neural.git
 cd veritas-neural
 ```
 
