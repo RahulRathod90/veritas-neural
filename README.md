@@ -268,6 +268,14 @@ docker run -p 7860:7860 veritas-neural-core
 
 ---
 
+## 👤 Author & Contributor
+
+This project was conceived, designed, and developed solely by:
+
+- **Rahul Rathod** ([@RahulRathod90](https://github.com/RahulRathod90)) — *Lead Developer & Sole Contributor*
+
+---
+
 ## 📜 License
 
 Distributed under the **MIT License**. See `LICENSE` for details.
@@ -275,5 +283,5 @@ Distributed under the **MIT License**. See `LICENSE` for details.
 ---
 
 <p align="center">
-  Crafted with ❤️ by <b>RahulRathod</b>
+  Built with ❤️ by <b><a href="https://github.com/RahulRathod90">Rahul Rathod</a></b>
 </p>
