@@ -42,15 +42,20 @@ import numpy as np
 
 try:
     import cv2
+    CV2_AVAILABLE = True
     if hasattr(cv2, "CascadeClassifier") and hasattr(cv2, "data") and hasattr(cv2.data, "haarcascades"):
-        CV2_AVAILABLE = True
-        _FACE_CASCADE = cv2.CascadeClassifier(
-            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-        )
+        try:
+            _FACE_CASCADE = cv2.CascadeClassifier(
+                cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+            )
+        except Exception:
+            _FACE_CASCADE = None
     else:
-        CV2_AVAILABLE = False
         _FACE_CASCADE = None
-        print("[VN] cv2 missing CascadeClassifier or haarcascades")
+    if _FACE_CASCADE is not None:
+        print("[VN] OpenCV face cascade detector initialized successfully")
+    else:
+        print("[VN] OpenCV active (Face crop cascade optional — primary SigLIP pipeline active)")
 except Exception as e:
     CV2_AVAILABLE = False
     _FACE_CASCADE = None
