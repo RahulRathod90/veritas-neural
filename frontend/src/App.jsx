@@ -509,7 +509,7 @@ function Contact() {
 
 function Footer() {
   // GitHub URL — replace with actual repository URL when published
-  const GITHUB_URL = 'https://github.com/1SoulHunter1/veritas-neural-core'
+  const GITHUB_URL = 'https://github.com/RahulRathod90/veritas-neural'
   return (
     <footer className="bg-ink rounded-t-5xl px-8 md:px-16 pt-16 pb-8 mt-0">
       <div className="max-w-6xl mx-auto">
@@ -1136,7 +1136,7 @@ function SubscriptionPanel() {
           <p className="text-offwhite text-2xl font-sans font-black uppercase tracking-tight mb-2 relative z-10">Open Source</p>
           <p className="text-offwhite text-5xl font-sans font-black mb-8 tracking-tighter relative z-10">Free<span className="text-lg text-offwhite/40 font-mono tracking-widest ml-1">/ forever</span></p>
           <div className="mt-auto relative z-10">
-            <a href="https://github.com/1SoulHunter1/veritas-neural-core" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between w-full p-4 bg-white/5 hover:bg-signal/10 border border-white/10 hover:border-signal/30 rounded-2xl text-offwhite hover:text-signal text-xs font-bold uppercase font-mono tracking-widest transition-all duration-300">
+            <a href="https://github.com/RahulRathod90/veritas-neural" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between w-full p-4 bg-white/5 hover:bg-signal/10 border border-white/10 hover:border-signal/30 rounded-2xl text-offwhite hover:text-signal text-xs font-bold uppercase font-mono tracking-widest transition-all duration-300">
               <span>View on GitHub</span><ArrowRight size={14} />
             </a>
           </div>
